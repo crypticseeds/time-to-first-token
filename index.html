@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learn LLM Inference Serving by Shipping One Service</title>
+<meta name="description" content="A 10-week, 30-minutes-a-day roadmap for engineers who want to run LLM inference in production. Fifty sessions, one service, one published benchmark.">
+<meta property="og:title" content="Learn LLM Inference Serving by Shipping One Service">
+<meta property="og:description" content="A 10-week, 30-minutes-a-day roadmap. Fifty sessions, one service, one published benchmark.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#edf0f1;--card:#f8fafa;--ink:#121a1e;--ink2:#48575e;--ink3:#7c8b92;
+    --rule:#ccd5d8;--rule2:#dde4e6;
+    --prefill:#5b3be8;--prefill-soft:#ece7fd;
+    --decode:#0a877a;--decode-soft:#dff0ee;
+    --stretch:#b06d14;--stretch-soft:#f7ecd9;
+    --display:"Familjen Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --body:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);
+    background-image:linear-gradient(var(--rule2) 1px,transparent 1px),linear-gradient(90deg,var(--rule2) 1px,transparent 1px);
+    background-size:28px 28px;background-position:-1px -1px;
+    color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px 96px}
+
+  .mast{padding:64px 0 0}
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);display:flex;flex-wrap:wrap;gap:6px 14px;margin:0 0 22px}
+  .eyebrow b{color:var(--ink);font-weight:500}
+  h1.title{font-family:var(--display);font-weight:700;font-size:clamp(38px,6.6vw,72px);line-height:.96;letter-spacing:-.028em;margin:0 0 20px;max-width:19ch}
+  h1.title em{font-style:normal;color:var(--prefill)}
+  .thesis{font-size:clamp(16.5px,2vw,19px);color:var(--ink2);max-width:64ch;margin:0 0 16px}
+  .thesis strong{color:var(--ink);font-weight:600}
+  .cta{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 0}
+  .cta a{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;padding:10px 16px;border:1px solid var(--ink);color:var(--ink);background:var(--card);transition:background .15s ease,color .15s ease}
+  .cta a:hover{background:var(--ink);color:var(--card)}
+  .cta a.ghost{border-color:var(--rule);color:var(--ink2);background:transparent}
+  .cta a.ghost:hover{border-color:var(--ink);color:var(--ink);background:transparent}
+
+  .outcomes{border:1px solid var(--ink);background:var(--card);padding:22px 22px 8px;margin:40px 0 14px}
+  .outcomes-h{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);margin:0 0 14px}
+  .outcomes ul{list-style:none;margin:0;padding:0}
+  .outcomes li{padding:11px 0;border-top:1px solid var(--rule2);font-size:15px;display:grid;grid-template-columns:24px 1fr;gap:0 10px}
+  .outcomes li::before{content:"·";font-family:var(--mono);color:var(--decode);font-size:20px;line-height:1}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin:0 0 56px}
+  .fact{background:var(--card);padding:15px 16px}
+  .fact b{display:block;font-family:var(--display);font-weight:700;font-size:24px;letter-spacing:-.02em;line-height:1}
+  .fact span{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-top:6px}
+
+  .nav{position:sticky;top:0;z-index:40;margin:0 0 52px;background:rgba(237,240,241,.93);backdrop-filter:blur(8px);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:9px 0}
+  .nav-in{display:flex;gap:3px;overflow-x:auto;scrollbar-width:none}
+  .nav-in::-webkit-scrollbar{display:none}
+  .nav a{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;color:var(--ink3);text-decoration:none;padding:5px 9px;white-space:nowrap;border:1px solid transparent}
+  .nav a:hover{color:var(--ink)}
+  .nav a.here{color:var(--ink);border-color:var(--rule);background:var(--card)}
+
+  .sec{margin:0 0 68px;scroll-margin-top:70px}
+  .sec-kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:0 0 12px}
+  h2{font-family:var(--display);font-weight:600;font-size:clamp(25px,3.4vw,34px);line-height:1.1;letter-spacing:-.02em;margin:0 0 16px;max-width:26ch}
+  p{margin:0 0 14px;max-width:74ch}
+  p.lede{color:var(--ink2);max-width:70ch}
+  a.lk{color:var(--prefill);text-decoration:none;border-bottom:1px solid #c3b6f5;transition:border-color .15s ease}
+  a.lk:hover{border-color:var(--prefill)}
+  code{font-family:var(--mono);font-size:.88em;background:#e2e7e8;padding:1px 5px;border-radius:2px}
+
+  .std{border-top:1px solid var(--ink)}
+  .std-item{display:grid;grid-template-columns:44px 1fr;gap:0 18px;padding:19px 0;border-bottom:1px solid var(--rule2)}
+  .std-n{font-family:var(--mono);font-size:12px;color:var(--prefill);padding-top:4px;letter-spacing:.04em}
+  .std-item h4{font-family:var(--display);font-weight:600;font-size:17.5px;margin:0 0 6px;letter-spacing:-.01em}
+  .std-item p{margin:0;color:var(--ink2);font-size:15px}
+
+  .wk{border-top:1px solid var(--ink);margin:0 0 40px;scroll-margin-top:66px}
+  .wk-head{display:grid;grid-template-columns:76px 1fr;gap:0 18px;padding:18px 0 16px}
+  .wk-n{font-family:var(--display);font-weight:700;font-size:30px;line-height:.9;letter-spacing:-.03em}
+  .wk-n span{display:block;font-family:var(--mono);font-size:10px;font-weight:400;letter-spacing:.12em;color:var(--ink3);margin-top:6px}
+  .wk-toggle{float:right;margin:2px 0 0 14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;background:transparent;border:1px solid var(--rule);color:var(--ink3);padding:5px 9px;cursor:pointer;transition:border-color .15s ease,color .15s ease,background .15s ease}
+  .wk-toggle:hover{border-color:var(--ink);color:var(--ink)}
+  .wk-toggle:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .wk-toggle.full{border-color:var(--decode);color:var(--decode);background:var(--decode-soft)}
+  .wk-theme{font-family:var(--display);font-weight:600;font-size:clamp(19px,2.5vw,23px);line-height:1.2;letter-spacing:-.015em;margin:0 0 8px}
+  .wk-focus{color:var(--ink2);font-size:15px;margin:0 0 10px}
+  .wk-med{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:0}
+  .wk-med b{font-weight:500}
+  .wk-med b.v{color:var(--prefill)}
+  .wk-med b.t{color:var(--ink)}
+  .wk-del{display:flex;gap:10px;align-items:baseline;background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--decode);padding:11px 14px;margin:14px 0 0;font-size:14.5px}
+  .wk-del b{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--decode);flex:none;padding-top:2px}
+
+  .days{margin:8px 0 0}
+  .day{display:grid;grid-template-columns:26px 46px 1fr;gap:0 14px;padding:15px 0;border-top:1px solid var(--rule2);align-items:start}
+  .day.done .day-body{opacity:.5}
+  .chk{appearance:none;-webkit-appearance:none;margin:2px 0 0;width:17px;height:17px;flex:none;border:1px solid var(--rule);background:var(--card);cursor:pointer;position:relative}
+  .chk:hover{border-color:var(--ink3)}
+  .chk:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .chk:checked{background:var(--ink);border-color:var(--ink)}
+  .chk:checked::after{content:"";position:absolute;left:4px;top:1px;width:6px;height:10px;border-right:2px solid var(--card);border-bottom:2px solid var(--card);transform:rotate(40deg)}
+  .day-d{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);padding-top:3px}
+  .day-body p{margin:0 0 9px;font-size:15.5px}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 7px}
+  .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border:1px solid}
+  .tag.read{color:var(--prefill);border-color:#c3b6f5;background:var(--prefill-soft)}
+  .tag.build{color:var(--decode);border-color:#a8d3ce;background:var(--decode-soft)}
+  .tag.core{color:var(--ink2);border-color:var(--rule)}
+  .tag.stretch{color:var(--stretch);border-color:#e3c692;background:var(--stretch-soft)}
+  .tag.skim{color:var(--ink2);border-color:var(--rule);background:#e6ebec}
+
+  .res{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+  .res li{font-size:14px;line-height:1.45;display:grid;grid-template-columns:52px 1fr;gap:0 10px;align-items:start}
+  .rt{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 0;text-align:center;border:1px solid;margin-top:2px}
+  .rt.video{color:var(--prefill);border-color:var(--prefill);background:var(--prefill-soft)}
+  .rt.text,.rt.docs{color:var(--ink2);border-color:var(--rule);background:transparent}
+  .rt.paper{color:var(--ink2);border-color:var(--rule);background:#e6ebec}
+  .rt.tool{color:var(--decode);border-color:#a8d3ce;background:var(--decode-soft)}
+  .meta{display:block;font-family:var(--mono);font-size:10.5px;color:var(--ink3);letter-spacing:.02em;margin-top:2px}
+  .day.buf{background:linear-gradient(90deg,rgba(176,109,20,.05),transparent 70%)}
+  .day.buf .day-d{color:var(--stretch)}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:14px;margin:18px 0 0}
+  .card{background:var(--card);border:1px solid var(--rule);padding:16px 17px}
+  .card h4{font-family:var(--display);font-weight:600;font-size:16px;margin:0 0 4px}
+  .card .sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin:0 0 10px}
+  .card p{font-size:14px;color:var(--ink2);margin:0 0 10px}
+  .card ul{margin:0;padding-left:16px;font-size:14px}
+  .card li{margin-bottom:5px}
+
+  table{width:100%;border-collapse:collapse;font-size:14.5px;margin:18px 0 0;background:var(--card);border:1px solid var(--rule)}
+  th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);text-align:left;font-weight:500;padding:11px 14px;border-bottom:1px solid var(--rule)}
+  td{padding:11px 14px;border-bottom:1px solid var(--rule2);color:var(--ink2);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td b{color:var(--ink);font-weight:600}
+
+  .track{border:1px solid var(--ink);background:var(--card);padding:16px 18px;margin:22px 0 30px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+  .track-l{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .track-num{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:-.02em;line-height:1}
+  .track-num small{font-family:var(--mono);font-size:11px;font-weight:400;letter-spacing:.08em;color:var(--ink3);margin-left:6px}
+  .bar{width:150px;height:7px;border:1px solid var(--rule);background:transparent;position:relative;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--decode);width:0;transition:width .25s ease}
+  .track-r{display:flex;gap:7px;flex-wrap:wrap}
+  .track button{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;background:transparent;border:1px solid var(--rule);color:var(--ink2);padding:7px 11px;cursor:pointer;transition:border-color .15s ease,color .15s ease}
+  .track button:hover{border-color:var(--ink);color:var(--ink)}
+  .track button.said{border-color:var(--decode);color:var(--decode)}
+  .track-warn{width:100%;font-family:var(--mono);font-size:11px;color:var(--stretch);border-top:1px solid var(--rule2);padding-top:12px;margin:2px 0 0;display:none}
+  .track-warn.on{display:block}
+
+  .gate{border:1px solid var(--ink);background:var(--card);padding:22px 22px 8px;margin:18px 0 0}
+  .gate-h{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);margin:0 0 4px}
+  .gate p.lede{font-size:14.5px;margin-bottom:16px}
+  .gate label{display:grid;grid-template-columns:26px 1fr;gap:0 12px;padding:11px 0;border-top:1px solid var(--rule2);cursor:pointer;font-size:15px}
+  .gate label:hover{background:rgba(18,26,30,.02)}
+
+  .cav{border-left:3px solid var(--rule);padding-left:20px}
+  .cav li{font-size:14.5px;color:var(--ink2);margin-bottom:10px;max-width:76ch}
+  footer{border-top:1px solid var(--rule);margin-top:20px;padding-top:20px;font-family:var(--mono);font-size:11px;color:var(--ink3);letter-spacing:.04em;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  footer a{color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--rule)}
+  footer a:hover{color:var(--ink)}
+
+  @media (max-width:640px){
+    .wrap{padding:0 16px 64px}
+    .mast{padding-top:40px}
+    .wk-head,.std-item{grid-template-columns:1fr;gap:10px}
+    .wk-n{font-size:24px}
+    .day{grid-template-columns:24px 1fr;gap:0 12px}
+    .day-d{grid-column:2;padding-top:0;margin-bottom:4px}
+    .day-body{grid-column:2}
+    table{display:block;overflow-x:auto}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.001s!important;transition-duration:.001s!important;scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <p class="eyebrow"><b>10 weeks</b> <span>·</span> <b>50 sessions</b> <span>·</span> <b>30 min a day</b> <span>·</span> open source</p>
+    <h1 class="title">Learn LLM inference serving by <em>shipping one service</em>.</h1>
+    <p class="thesis">
+      A roadmap for engineers who want to actually run inference in production, not just read about it. Every session feeds a single artifact: an OpenAI-compatible service you deploy on a rented GPU, instrument, load test past 1000 concurrent requests, optimize, and <strong>publish as a reproducible benchmark</strong>.
+    </p>
+    <p class="thesis">
+      The alternative, running seventeen disconnected experiments, spends most of its time on setup. One service that keeps growing gets the same coverage and leaves you with something to show.
+    </p>
+    <div class="cta">
+      <a href="#weeks">Start week 1</a>
+      <a class="ghost" href="#setup">Setup</a>
+      <a class="ghost" href="#reference">Reference</a>
+    </div>
+
+    <div class="outcomes">
+      <p class="outcomes-h">What you have at the end</p>
+      <ul>
+        <li>A serving stack you configured, instrumented, and tuned yourself</li>
+        <li>Dashboards for TTFT, inter-token latency, throughput, queue depth, and cost per request</li>
+        <li>A load test harness that reproducibly drives 1000+ concurrent requests</li>
+        <li>Benchmarked variants across FP16, FP8, INT4, speculative decoding, and KV eviction</li>
+        <li>A cost, latency and quality router with per-request token budgeting</li>
+        <li>A published benchmark writeup with pinned versions and reproducible commands</li>
+      </ul>
+    </div>
+    <div class="facts">
+      <div class="fact"><b>30 min</b><span>per session</span></div>
+      <div class="fact"><b>5 + 2</b><span>study days, buffer days</span></div>
+      <div class="fact"><b>25 h</b><span>total</span></div>
+      <div class="fact"><b>1</b><span>service, start to finish</span></div>
+    </div>
+  </header>
+
+  <nav class="nav" aria-label="Sections"><div class="nav-in" id="nav"></div></nav>
+
+  <section class="sec" id="who">
+    <p class="sec-kicker">Prerequisites</p>
+    <h2>Who this is for</h2>
+    <p class="lede">You should be comfortable with Python, transformers at the architecture level, and the command line. You do not need prior serving, Kubernetes, or CUDA experience.</p>
+    <p class="lede">If you already know a topic, the sessions marked <span class="tag skim">skim</span> are the ones to compress. Do not compress the build sessions, they are the point.</p>
+  </section>
+
+  <section class="sec" id="order">
+    <p class="sec-kicker">Design</p>
+    <h2>Why the order is what it is</h2>
+    <p class="lede">This ordering differs from how most people write the list down. Five decisions drive it.</p>
+    <div class="std">
+      <div class="std-item"><div class="std-n">01</div><div>
+        <h4>The roofline model comes first</h4>
+        <p>Every optimization later is a move on the same plot. Quantization attacks memory-bandwidth-bound decode. Continuous batching raises arithmetic intensity toward the compute roof. Speculative decoding spends FLOPs, cheap in the memory-bound regime, to cut sequential memory loads. Disaggregation exists because prefill is compute-bound and decode is bandwidth-bound and they fight over one GPU. Without this model, the rest is a bag of tricks.</p>
+      </div></div>
+      <div class="std-item"><div class="std-n">02</div><div>
+        <h4>Measurement comes before optimization</h4>
+        <p>Instrumentation lands in week 3 and load testing in week 5, well before the tuning knobs. Nothing after them is verifiable without them, and a public benchmark is mostly a credible measurement harness with a model attached.</p>
+      </div></div>
+      <div class="std-item"><div class="std-n">03</div><div>
+        <h4>Paged attention and continuous batching are not build exercises</h4>
+        <p>vLLM implements both, and chunked prefill is the default scheduling strategy in vLLM and SGLang. Reimplementing them teaches less than reading the block manager until you can explain from the code why memory waste drops under 4 percent and why the GPU stops idling between requests.</p>
+      </div></div>
+      <div class="std-item"><div class="std-n">04</div><div>
+        <h4>The router sits next to unit economics</h4>
+        <p>A router that picks a backend by cost, latency, and quality is the one component that forces a dollar figure and a latency budget into code. Studying economics the same week turns the reading into a routing policy instead of a blog post you agreed with.</p>
+      </div></div>
+      <div class="std-item"><div class="std-n">05</div><div>
+        <h4>Edge deployment is optional and last</h4>
+        <p>ONNX Runtime, TensorRT-LLM, and WebLLM are client-side and embedded runtimes. They share almost no operational surface with the datacenter stack the other nine weeks build.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section class="sec" id="setup">
+    <p class="sec-kicker">Before week 1</p>
+    <h2>Setup</h2>
+    <p class="lede">A 7-8B model needs roughly one 24GB GPU. Rent by the half hour and shut the instance down between sessions. All of week 1, most of week 3, the week 6 lecture days, and all of week 9 reading need no GPU at all, so batch your rentals around the build days.</p>
+    <div class="cards">
+      <div class="card">
+        <h4>GPU access</h4>
+        <p class="sub">One H100 needed for two sessions only</p>
+        <ul>
+          <li><a class="lk" href="https://www.runpod.io" target="_blank" rel="noopener">RunPod</a>, per-second billing</li>
+          <li><a class="lk" href="https://modal.com" target="_blank" rel="noopener">Modal</a>, serverless, best for sweep scripts</li>
+          <li><a class="lk" href="https://lambda.ai" target="_blank" rel="noopener">Lambda</a> and <a class="lk" href="https://vast.ai" target="_blank" rel="noopener">vast.ai</a>, cheap on-demand</li>
+          <li><a class="lk" href="https://colab.research.google.com" target="_blank" rel="noopener">Colab</a> for pure-Python sessions</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Install</h4>
+        <p class="sub">Plus Docker and kind</p>
+        <p><code>pip install vllm</code><br><code>pip install guidellm</code><br><code>pip install sglang</code></p>
+        <p>Docker for the Prometheus and Grafana stack in week 3, and <code>kind</code> or a small managed cluster for week 8.</p>
+      </div>
+      <div class="card">
+        <h4>Pacing</h4>
+        <p class="sub">Five study days, two buffer days</p>
+        <p>Buffer days exist so that missing a Tuesday does not collapse the plan. They are for catching up, not for new material.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="weeks">
+    <p class="sec-kicker">The roadmap</p>
+    <h2>Ten weeks, five sessions each</h2>
+    <p class="lede">Every session fits 30 minutes. Where a lecture does not, the split is explicit. Tick sessions off as you go. Progress saves in your browser and survives closing the tab.</p>
+
+    <div class="track">
+      <div class="track-l">
+        <span class="track-num" id="tnum">0<small>/ 50 sessions</small></span>
+        <span class="bar"><i id="tbar"></i></span>
+      </div>
+      <div class="track-r">
+        <button id="tlink" title="Copy a link that carries your progress, for another device">Copy sync link</button>
+        <button id="texp" title="Download your progress as a JSON file">Export</button>
+        <button id="timp" title="Restore progress from a JSON file">Import</button>
+        <button id="trst" title="Clear all progress">Reset</button>
+        <input type="file" id="tfile" accept="application/json,.json" hidden>
+      </div>
+      <p class="track-warn" id="twarn">Progress cannot be saved in this browser context, most likely private browsing or a sandboxed frame. Ticks will work for this visit only. Use Export before you close the tab.</p>
+    </div>
+
+    <div id="weeks"></div>
+  </section>
+
+  <section class="sec" id="gate">
+    <p class="sec-kicker">Week 10 dependency</p>
+    <h2>Before you publish a benchmark</h2>
+    <p class="lede">These are the mistakes that get public inference benchmarks taken apart. Read them in week 5, apply them in week 10.</p>
+    <div class="gate">
+      <p class="gate-h">Methodology checklist</p>
+      <div id="gatelist"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="decisions">
+    <p class="sec-kicker">Judgement calls</p>
+    <h2>Decision points</h2>
+    <p class="lede">Moments where following the schedule blindly is the wrong move.</p>
+    <table>
+      <thead><tr><th style="width:38%">If</th><th>Then</th></tr></thead>
+      <tbody>
+        <tr><td><b>Week 5.</b> TTFT spikes and <code>num_requests_waiting</code> climbs before target concurrency.</td><td>The server is preempting. Stop and tune <code>--max-num-seqs</code>, <code>--gpu-memory-utilization</code>, and chunked prefill first. A run measured at the preemption point is not publishable.</td></tr>
+        <tr><td><b>Week 6.</b> INT4 costs more than 1 to 2 percent on your quality proxy for the throughput it returns.</td><td>Keep FP16 or FP8 as the default. Treat INT4 as a memory-pressure lever, not a throughput default.</td></tr>
+        <tr><td><b>Week 7.</b> Speculative decoding slows you down at your real request rate.</td><td>Expected. Gains appear at low query rate and vanish when the GPU is compute-saturated. Publish the crossover point, it is more useful than the speedup.</td></tr>
+        <tr><td><b>Week 8.</b> Kubernetes starts eating whole sessions on cluster plumbing.</td><td>Use a managed cluster, or fall back to single-node Docker plus the KEDA reading. The autoscaling signal matters more than a bespoke cluster.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="sec" id="reference">
+    <p class="sec-kicker">Reference</p>
+    <h2>Papers, courses and tools</h2>
+    <table>
+      <thead><tr><th style="width:34%">Paper</th><th style="width:18%">Venue</th><th>Topic</th></tr></thead>
+      <tbody>
+        <tr><td><a class="lk" href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener">PagedAttention / vLLM</a></td><td>SOSP 2023</td><td>KV cache paging</td></tr>
+        <tr><td><a class="lk" href="https://www.usenix.org/conference/osdi22/presentation/yu" target="_blank" rel="noopener">Orca</a></td><td>OSDI 2022</td><td>Continuous batching</td></tr>
+        <tr><td><a class="lk" href="https://arxiv.org/abs/2312.07104" target="_blank" rel="noopener">SGLang</a></td><td>NeurIPS 2024</td><td>RadixAttention, prefix reuse</td></tr>
+        <tr><td><a class="lk" href="https://arxiv.org/abs/2403.02310" target="_blank" rel="noopener">Sarathi-Serve</a></td><td>OSDI 2024</td><td>Chunked prefill</td></tr>
+        <tr><td><a class="lk" href="https://www.usenix.org/conference/osdi24/presentation/zhong-yinmin" target="_blank" rel="noopener">DistServe</a></td><td>OSDI 2024</td><td>Prefill/decode disaggregation</td></tr>
+        <tr><td><a class="lk" href="https://arxiv.org/abs/2311.18677" target="_blank" rel="noopener">Splitwise</a></td><td>ISCA 2024</td><td>Phase splitting across GPU types</td></tr>
+        <tr><td><a class="lk" href="https://arxiv.org/abs/2407.00079" target="_blank" rel="noopener">Mooncake</a></td><td>FAST 2025</td><td>KV-cache-centric serving</td></tr>
+        <tr><td><a class="lk" href="https://arxiv.org/abs/2309.17453" target="_blank" rel="noopener">StreamingLLM</a></td><td>ICLR 2024</td><td>Attention sinks, long context</td></tr>
+        <tr><td><a class="lk" href="https://arxiv.org/abs/2401.15077" target="_blank" rel="noopener">EAGLE</a></td><td>arXiv</td><td>Speculative sampling</td></tr>
+      </tbody>
+    </table>
+    <p class="lede" style="margin-top:16px">For GPTQ, AWQ, SmoothQuant, LLM.int8(), Medusa, H2O, SnapKV and the FlashAttention family, use <a class="lk" href="https://lilianweng.github.io/posts/2023-01-10-inference-optimization/" target="_blank" rel="noopener">Lilian Weng's survey</a> and the <a class="lk" href="https://developer.nvidia.com/blog/mastering-llm-techniques-inference-optimization/" target="_blank" rel="noopener">NVIDIA optimization survey</a>, which cite them directly. Search exact titles rather than guessing arXiv IDs.</p>
+    <div class="cards">
+      <div class="card">
+        <h4>Courses and series</h4>
+        <p class="sub">Full playlists worth having open</p>
+        <ul>
+          <li><a class="lk" href="https://cs336.stanford.edu/spring2025/" target="_blank" rel="noopener">Stanford CS336</a>, Percy Liang and Tatsunori Hashimoto. Lectures 5, 6, 7-8, 10</li>
+          <li><a class="lk" href="https://hanlab.mit.edu/courses/2024-fall-65940" target="_blank" rel="noopener">MIT 6.5940 EfficientML.ai</a>, Song Han</li>
+          <li><a class="lk" href="https://www.youtube.com/@vllm-project" target="_blank" rel="noopener">vLLM Office Hours</a>, from the engine team</li>
+          <li><a class="lk" href="https://www.youtube.com/@GPUMODE" target="_blank" rel="noopener">GPU MODE</a>, kernel and systems lectures</li>
+          <li><a class="lk" href="https://www.usenix.org/conferences" target="_blank" rel="noopener">USENIX</a>, talks by paper authors</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Tools</h4>
+        <p class="sub">Cross-check benchmarks with two, never one</p>
+        <ul>
+          <li><a class="lk" href="https://github.com/vllm-project/vllm" target="_blank" rel="noopener">vLLM</a>, primary serving engine</li>
+          <li><a class="lk" href="https://docs.sglang.io" target="_blank" rel="noopener">SGLang</a>, prefix-reuse comparison</li>
+          <li><a class="lk" href="https://github.com/vllm-project/guidellm" target="_blank" rel="noopener">GuideLLM</a>, SLO-aware rate sweeps</li>
+          <li><a class="lk" href="https://github.com/triton-inference-server/perf_analyzer" target="_blank" rel="noopener">genai-perf</a>, TTFT and ITL</li>
+          <li><a class="lk" href="https://github.com/vllm-project/production-stack" target="_blank" rel="noopener">production-stack</a>, Kubernetes deployment</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Weekly reading habit</h4>
+        <p class="sub">30 minutes, after week 10</p>
+        <p>Scan titles on <a class="lk" href="https://arxiv.org/list/cs.DC/recent" target="_blank" rel="noopener">arXiv cs.DC</a> and the systems conferences. Read exactly one paper's abstract, method figure and evaluation. Track applied writeups on the <a class="lk" href="https://blog.vllm.ai" target="_blank" rel="noopener">vLLM</a> and <a class="lk" href="https://lmsys.org/blog/" target="_blank" rel="noopener">LMSYS</a> blogs.</p>
+        <p>Read the systems paper, skip the model-release press.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="notes">
+    <p class="sec-kicker">Fine print</p>
+    <h2>Notes on the sources</h2>
+    <p class="lede">Every video here has a named speaker from a university, an engine team, or a conference, and is paired with a text covering the same material, so you can read instead of watch. Where no video met that bar, the week is text-only rather than padded.</p>
+    <ul class="cav">
+      <li>Timestamps are targets. Talks get re-uploaded and re-cut, so use the on-video chapter markers to place split points.</li>
+      <li>MIT 6.5940 was not offered in Fall 2025. Fall 2023 and Fall 2024 recordings both exist and either works.</li>
+      <li>vLLM serves its blog at two URL shapes and its docs change with versions. If a link 404s, search the exact title rather than editing the path.</li>
+      <li>Performance figures quoted here are the sources' own claims from their papers and blogs, not independently reproduced. Treat them as the number that source is willing to defend, not as ground truth for your hardware.</li>
+      <li>Cost per million tokens and GPU hourly rates move fast. The economics reading is valuable for its method. Re-derive every number against your own hardware.</li>
+    </ul>
+    <h2 style="margin-top:34px">Contributing</h2>
+    <p class="lede">Corrections and additions are welcome, particularly broken links, newer primary sources that supersede something listed here, videos that meet the bar for a week currently marked text-only, and your own benchmark writeup if you finish the roadmap.</p>
+  </section>
+
+  <footer>
+    <span>Open source · CC BY 4.0 · use it, adapt it, teach from it</span>
+    <span>Progress is stored locally in this page</span>
+  </footer>
+</div>
+
+<script>
+const DAYS = ["Mon","Tue","Wed","Thu","Fri"];
+const WEEKS = [
+{n:1,theme:"The mental model",
+ focus:"Install the one model everything else hangs on. Roofline, arithmetic intensity, and why decode waits on memory while prefill waits on compute.",
+ med:["v","Video-first. Roofline reasoning benefits from live derivation and diagrams."],
+ del:"A hand-derived arithmetic intensity figure for the model you will serve, and the ability to say which phase is bandwidth-bound and why.",
+ days:[
+  {k:"read",t:["CORE"],x:"Read Making Deep Learning Go Brrrr From First Principles, first half through the compute versus memory-bandwidth versus overhead regimes. The factory analogy is the model you keep for ten weeks.",r:[["text","Making Deep Learning Go Brrrr From First Principles","https://horace.io/brrr_intro.html","Horace He"]]},
+  {k:"read",t:["CORE"],x:"Finish the post. Operator fusion, overhead, and why adding FLOPS does nothing for a memory-bandwidth-bound kernel.",r:[["text","Same post, second half","https://horace.io/brrr_intro.html","Horace He"]]},
+  {k:"read",t:["CORE"],x:"Stanford CS336 lecture 5, GPUs, first 30 minutes: execution model and memory hierarchy. Read the slides alongside if the pace is fast.",r:[["video","CS336 Lecture 5: GPUs","https://www.youtube.com/watch?v=6OBtO9niT00","Stanford · Percy Liang, Tatsunori Hashimoto"],["text","CS336 lecture slides","https://github.com/stanford-cs336/spring2025-lectures","Stanford CS336 repo"]]},
+  {k:"read",t:["CORE"],x:"CS336 lecture 5, second 30 minutes: arithmetic intensity, roofline, and why data movement dominates. This is the half that matters most.",r:[["video","CS336 Lecture 5, second half","https://www.youtube.com/watch?v=6OBtO9niT00","Stanford Online"],["text","Transformer Inference Arithmetic","https://kipp.ly/transformer-inference-arithmetic/","kipply · the same math in text"]]},
+  {k:"build",t:["CORE","SKIM"],x:"Hand-derive arithmetic intensity for your target model, using kipply's numbers as the worked example. The value is producing your own figure.",r:[["text","Transformer Inference Arithmetic","https://kipp.ly/transformer-inference-arithmetic/","kipply"]]}],
+ buf:{x:"Watch CS336 lecture 10 on inference, then read the prefill versus decode opening of the Databricks post.",r:[["video","CS336 Lecture 10: Inference","https://www.youtube.com/watch?v=fcgPYo3OtV0","Stanford Online"],["text","LLM Inference Performance Engineering","https://www.databricks.com/blog/llm-inference-performance-engineering-best-practices","Databricks"]]}},
+
+{n:2,theme:"vLLM: deploy it, then read its internals",
+ focus:"Stand the service up, then go into the block manager and scheduler until the paging design is obvious from the code.",
+ med:["t","Text-first for PagedAttention, where the paper is more precise. Video-first for the V1 architecture."],
+ del:"An OpenAI-compatible endpoint serving a 7-8B model, plus your own notes explaining PagedAttention and the V1 scheduler from source.",
+ days:[
+  {k:"read",t:["CORE","SKIM"],x:"Read the PagedAttention announcement for the mechanism: prior systems waste 60 to 80 percent of KV memory on fragmentation and over-reservation, fixed-size blocks cut waste under 4 percent. Then skim the paper's block-table section.",r:[["text","vLLM: Easy, Fast, and Cheap LLM Serving with PagedAttention","https://blog.vllm.ai/2023/06/20/vllm.html","vLLM blog"],["paper","Efficient Memory Management for LLM Serving","https://arxiv.org/abs/2309.06180","Kwon, Li, Zhuang, Sheng et al · SOSP 2023"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Serve Llama-3.1-8B-Instruct or Qwen2.5-7B behind vLLM's OpenAI-compatible server. Save the launch command, you reuse it for ten weeks.",r:[["docs","Modal vLLM example","https://modal.com/docs/examples/vllm_inference","Modal docs"],["tool","RunPod","https://www.runpod.io","GPU rental"]]},
+  {k:"read",t:["CORE"],x:"vLLM Office Hours 22, Intro to vLLM V1, covering the V1 scheduler, memory manager, model runner and API server. Read the V1 blog as the written version.",r:[["video","vLLM Office Hours 22: Intro to vLLM V1","https://www.youtube.com/watch?v=jmzIvQZCLZM","vLLM official · Michael Goin, Red Hat"],["text","vLLM V1 architecture","https://blog.vllm.ai/2025/01/27/v1-alpha-release.html","vLLM blog"]]},
+  {k:"read",t:["CORE"],x:"Read Inside vLLM: Anatomy of a High-Throughput Inference System, scheduler and block manager sections only.",r:[["text","Inside vLLM: Anatomy of a High-Throughput System","https://blog.vllm.ai/2025/09/05/anatomy-of-vllm.html","vLLM blog"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Follow the block table code path in the repo. Write three sentences on how a request's blocks get looked up. If you cannot, read it again rather than moving on.",r:[["tool","vllm-project/vllm","https://github.com/vllm-project/vllm","GitHub"]]}],
+ buf:{x:"Re-read the V1 blog's scheduler section against the code you read on Friday, and note where the blog simplifies.",r:[["text","vLLM V1 architecture","https://blog.vllm.ai/2025/01/27/v1-alpha-release.html","vLLM blog"]]}},
+
+{n:3,theme:"Measurement infrastructure",
+ focus:"Build the lens before the optimizations. Everything after this week is only legible because of this week.",
+ med:["t","Text-first. The writing on benchmarking methodology is stronger than any available video."],
+ del:"A live Grafana dashboard showing TTFT, inter-token latency, throughput and queue depth on your own service.",
+ days:[
+  {k:"read",t:["CORE"],x:"Read the vLLM metrics design doc. Learn what num_requests_running, num_requests_waiting and the latency histograms actually measure.",r:[["docs","vLLM V1 metrics design","https://docs.vllm.ai/en/latest/design/v1/metrics/","vLLM docs"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Stand up the Prometheus and Grafana Docker Compose stack against your running service.",r:[["docs","Prometheus and Grafana example","https://docs.vllm.ai/en/latest/examples/online_serving/prometheus_grafana/","vLLM docs"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Import the dashboard JSON and confirm live panels move under a trickle of load. Fix the scrape config now, not in week 5 under 1000 concurrent requests.",r:[["docs","Same example, dashboard JSON","https://docs.vllm.ai/en/latest/examples/online_serving/prometheus_grafana/","vLLM docs"]]},
+  {k:"read",t:["CORE"],x:"Read the Databricks and NVIDIA pieces, then map every metric they define to a panel. Panels without a definition get deleted.",r:[["text","LLM Inference Performance Engineering","https://www.databricks.com/blog/llm-inference-performance-engineering-best-practices","Databricks"],["text","LLM Inference Benchmarking: Fundamental Concepts","https://developer.nvidia.com/blog/llm-inference-benchmarking-fundamental-concepts/","NVIDIA Developer"]]},
+  {k:"read",t:["CORE"],x:"Read the Modal benchmarking methodology: why you sweep request rate rather than pick one, and why the saturation point gets discarded.",r:[["text","How to Benchmark LLM Engines","https://modal.com/llm-almanac/how-to-benchmark","Modal"]]}],
+ buf:{x:"Optional video. The production stack deep dive covers observability panels in a deployed setting.",r:[["video","vLLM Office Hours 21: Production Stack Deep Dive","https://www.youtube.com/watch?v=0ZVu0A4wWQg","vLLM official"]]}},
+
+{n:4,theme:"SGLang, RadixAttention and batching internals",
+ focus:"The contrast that teaches the design space: fixed-block paging versus tree-structured prefix reuse.",
+ med:["v","Mixed. The RadixAttention talk is from the project lead. Chunked prefill is text-only."],
+ del:"An SGLang variant of the same service, and a first prefix-reuse comparison against vLLM.",
+ days:[
+  {k:"read",t:["CORE"],x:"Read the RadixAttention post. It reports up to 5x higher throughput on prefix-heavy workloads with no noticeable overhead when there are no cache hits, which tells you which workloads it wins on.",r:[["text","RadixAttention and SGLang","https://lmsys.org/blog/2024-01-17-sglang/","LMSYS"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Deploy SGLang with the same model as week 2. Same hardware, same prompt, so the engine is the only variable left.",r:[["docs","SGLang documentation","https://docs.sglang.io","SGLang"]]},
+  {k:"read",t:["CORE"],x:"Watch the SGLang project lead explain RadixAttention, cache-aware routing and the zero-overhead scheduler. Pair with the NeurIPS paper.",r:[["video","Efficient LLM Inference with SGLang","https://www.youtube.com/watch?v=Ny4xxErgFgQ","Lianmin Zheng · SGLang lead"],["paper","SGLang","https://arxiv.org/abs/2312.07104","Zheng, Yin, Xie et al · NeurIPS 2024"]]},
+  {k:"read",t:["CORE","SKIM"],x:"Read the Anyscale continuous batching post, then the Orca paper it is built on. Focus on iteration-level scheduling and the heavy-tailed length assumption that makes the numbers real.",r:[["text","Continuous batching","https://www.anyscale.com/blog/continuous-batching-llm-inference","Anyscale"],["paper","Orca","https://www.usenix.org/conference/osdi22/presentation/yu","Yu et al · OSDI 2022"]]},
+  {k:"read",t:["CORE"],x:"Read Sarathi-Serve on chunked prefill and stall-free scheduling. This is why chunked prefill became the default in both engines.",r:[["paper","Sarathi-Serve","https://arxiv.org/abs/2403.02310","Agrawal et al · OSDI 2024"],["paper","SARATHI","https://arxiv.org/abs/2308.16369","the original chunked prefill paper"]]}],
+ buf:{x:"Read the SGLang v0.4 scheduler post, then run a shared-system-prompt workload against both engines and watch the TTFT gap. This is your first real measurement.",r:[["text","SGLang v0.4 zero-overhead scheduler","https://lmsys.org/blog/2024-12-04-sglang-v0-4/","LMSYS"]]}},
+
+{n:5,theme:"Load testing to 1000 concurrent",
+ focus:"Build the reproducible harness and learn what makes a benchmark defensible before you have anything to defend.",
+ med:["t","Text-first. Documentation and hands-on only."],
+ del:"A scripted concurrency sweep past 1000 concurrent requests with p50, p95 and p99 output, cross-checked by two independent tools.",
+ days:[
+  {k:"read",t:["CORE"],x:"Read the GuideLLM introduction and install it. It sweeps from a synchronous baseline up to saturation rather than testing one arbitrary load level.",r:[["text","GuideLLM: Evaluate LLM deployments","https://developers.redhat.com/articles/2025/06/20/guidellm-evaluate-llm-deployments-real-world-inference","Red Hat Developer"],["tool","vllm-project/guidellm","https://github.com/vllm-project/guidellm","GitHub"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Run a GuideLLM sweep with fixed input and output token lengths. Fixed lengths determine KV cache size and therefore the entire result.",r:[["tool","GuideLLM","https://github.com/vllm-project/guidellm","GitHub"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Run vllm bench serve on the same workload as an independent cross-check. Two tools disagreeing is information, not a problem.",r:[["docs","vLLM benchmark CLI","https://docs.vllm.ai/en/latest/benchmarking/cli/","vLLM docs"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Run a genai-perf concurrency sweep at 1, 2, 4 up to 128 and find where throughput saturates while latency degrades. That knee is the only interesting point on the curve.",r:[["tool","genai-perf","https://github.com/triton-inference-server/perf_analyzer","NVIDIA Triton"],["text","LLM Inference Benchmarking Guide","https://developer.nvidia.com/blog/llm-inference-benchmarking-guide-nvidia-genai-perf-and-nim/","NVIDIA · Elias Bermudez"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Rent an H100 for this session only. Push past 1000 concurrent, watching KV cache utilization and num_requests_waiting for preemption.",r:[["text","Practical strategies for vLLM performance tuning","https://developers.redhat.com/articles/2026/03/03/practical-strategies-vllm-performance-tuning","Red Hat Developer"]]}],
+ buf:{x:"Write the methodology checklist into your benchmark repo as a file. It is the section further down this page.",r:[]}},
+
+{n:6,theme:"Quantization tradeoffs",
+ focus:"The first tuning knob, and the first week your harness earns its keep.",
+ med:["v","Video-first. The lectures are the entry point, the papers are the deep dive."],
+ del:"FP8 and INT4 or AWQ variants benchmarked against the FP16 baseline on both throughput and a quality proxy.",
+ days:[
+  {k:"read",t:["CORE"],x:"MIT 6.5940 lecture 5, Quantization Part I, first half.",r:[["video","EfficientML.ai Lecture 5: Quantization Part I","https://www.youtube.com/watch?v=TSc_BibWRhM","MIT HAN Lab · Prof. Song Han"],["text","MIT 6.5940 course page and slides","https://hanlab.mit.edu/courses/2024-fall-65940","MIT HAN Lab"]]},
+  {k:"read",t:["CORE"],x:"Finish lecture 5, start lecture 6 for AWQ, GPTQ and SmoothQuant depth. SmoothQuant and AWQ came out of this lab, so this is the authors teaching their own work.",r:[["video","EfficientML.ai Lectures 5 and 6","https://www.youtube.com/watch?v=TSc_BibWRhM","MIT HAN Lab · Song Han"]]},
+  {k:"read",t:["CORE","SKIM"],x:"Read the quantization section of Lilian Weng's survey, then write down which method each engine you run actually implements. That decides what you can ship.",r:[["text","Large Transformer Model Inference Optimization","https://lilianweng.github.io/posts/2023-01-10-inference-optimization/","Lilian Weng"],["docs","Hugging Face quantization docs","https://huggingface.co/docs/transformers/main/en/quantization/overview","practitioner reference"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Serve an AWQ or GPTQ checkpoint and an FP8 variant. Capture throughput and memory under the same sweep you used in week 5.",r:[["docs","vLLM quantization","https://docs.vllm.ai/en/latest/features/quantization/","vLLM docs"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Run a fixed eval set or perplexity proxy across FP16, FP8 and INT4. This table is the deliverable, not the speedup number.",r:[]}],
+ buf:{x:"Watch Tim Dettmers, author of LLM.int8() and QLoRA, on outlier features and 4-bit NormalFloat, then the LLM Compressor session for the checkpoint workflow.",r:[["video","QLoRA: Efficient Finetuning of Quantized LLMs","https://www.youtube.com/watch?v=fQirE9N5q_Y","Applied ML Days · Tim Dettmers"],["video","vLLM Office Hours 31: LLM Compressor","https://www.youtube.com/watch?v=WVenRmF4dPY","vLLM official"]]}},
+
+{n:7,theme:"Speculative decoding and KV eviction",
+ focus:"Two knobs where the concept is widely known but the implementation detail is not.",
+ med:["v","Video-first for speculative decoding, taught by the person who wrote vLLM's implementation. Text-first for KV eviction."],
+ del:"A speculative decoding variant and a long-context eviction configuration, both benchmarked, including negative results.",
+ days:[
+  {k:"read",t:["CORE","SKIM"],x:"Read the docs for the method-selection table, then the vLLM benchmark post: up to 2.8x at QPS 1, but 1.4 to 1.8x slowdown at high QPS. The crossover is the finding, not the speedup.",r:[["docs","Speculative decoding","https://docs.vllm.ai/en/latest/features/speculative_decoding/","vLLM docs"],["text","How Speculative Decoding Boosts vLLM Performance","https://blog.vllm.ai/2024/10/17/spec-decode.html","vLLM blog"]]},
+  {k:"read",t:["CORE"],x:"GPU MODE lecture 22, first half: proposers, scorers, verifiers and the draft model worker. Taught by the original author of vLLM's implementation, which is why it is worth the time despite a familiar topic.",r:[["video","Lecture 22: Hacker's Guide to Speculative Decoding in vLLM","https://www.youtube.com/watch?v=9wNAgpX6z_4","GPU MODE · Cade Daniel, Anyscale"],["paper","EAGLE","https://arxiv.org/abs/2401.15077","the draft-model method vLLM implements"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Enable speculative decoding and benchmark inter-token latency at both low and high QPS. Finding your own crossover point is the session.",r:[["docs","Speculative decoding","https://docs.vllm.ai/en/latest/features/speculative_decoding/","vLLM docs"]]},
+  {k:"read",t:["CORE"],x:"Long context and KV eviction. StreamingLLM reports up to 22.2x speedup over sliding-window recomputation and stays stable past 4M tokens.",r:[["paper","Efficient Streaming Language Models with Attention Sinks","https://arxiv.org/abs/2309.17453","Guangxuan Xiao et al · ICLR 2024"],["video","StreamingLLM and DuoAttention","https://www.csail.mit.edu/event/scale-ml-guangxuan-xiao-streamingllm-and-duoattention-efficient-and-effective-long-sequence","MIT CSAIL · Guangxuan Xiao"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Configure a long-context workload and an eviction strategy, then measure the effect on memory and TTFT. Long context is where eviction stops being theoretical.",r:[]}],
+ buf:{x:"Finish GPU MODE lecture 22, the vLLM integration and benchmarks half, then skim the speculators library.",r:[["video","GPU MODE Lecture 22, second half","https://www.youtube.com/watch?v=9wNAgpX6z_4","Cade Daniel, Anyscale"],["tool","vllm-project/speculators","https://github.com/vllm-project/speculators","GitHub"]]}},
+
+{n:8,theme:"Disaggregated serving and Kubernetes",
+ focus:"The prefill and decode asymmetry from week 1 becomes an architecture, then the operations layer that runs it.",
+ med:["v","Video-first for disaggregation. Text-first for Kubernetes, which changes too fast for video to stay current."],
+ del:"Your service on Kubernetes with autoscaling driven by queue depth rather than CPU.",
+ days:[
+  {k:"read",t:["CORE"],x:"The DistServe talk from OSDI 2024, presented by the first author. Short enough for one session. It reports serving 7.4x more requests or holding 12.6x tighter SLOs.",r:[["video","OSDI 24: DistServe","https://www.youtube.com/watch?v=WwJvecXOeUA","USENIX · Yinmin Zhong, Peking University"],["paper","DistServe","https://www.usenix.org/conference/osdi24/presentation/zhong-yinmin","USENIX OSDI 2024"]]},
+  {k:"read",t:["CORE"],x:"Splitwise, where an H100-for-prefill and power-capped-A100-for-decode split gave 1.4x throughput at 20 percent lower cost, then vLLM's disaggregated prefilling docs.",r:[["paper","Splitwise","https://arxiv.org/abs/2311.18677","Patel et al · Microsoft · ISCA 2024"],["docs","Disaggregated prefilling","https://docs.vllm.ai/en/latest/features/disagg_prefill/","vLLM docs"]]},
+  {k:"read",t:["CORE"],x:"Mooncake, the KV-cache-centric design running in production at Kimi, then the SGLang PD-disaggregation docs. Compare how each engine splits the phases.",r:[["paper","Mooncake","https://arxiv.org/abs/2407.00079","Qin et al · Moonshot AI · FAST 2025"],["docs","SGLang PD disaggregation","https://docs.sglang.io/docs/advanced_features/pd_disaggregation","SGLang docs"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Deploy with the vLLM production stack Helm charts, on a managed cluster or kind for the control-plane parts.",r:[["tool","vllm-project/production-stack","https://github.com/vllm-project/production-stack","GitHub"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Scale on the num_requests_waiting custom metric instead of CPU. CPU-based autoscaling on a GPU service is the mistake this session prevents.",r:[["text","KServe autoscaling for vLLM with KEDA","https://developers.redhat.com/articles/2025/09/23/how-set-kserve-autoscaling-vllm-keda","Red Hat Developer"],["docs","llm-d","https://llm-d.ai","Kubernetes-native distributed inference"]]}],
+ buf:{x:"Place the rest of the ecosystem on the map without adopting any of it.",r:[["text","Disaggregated Inference at Scale with PyTorch and vLLM","https://pytorch.org/blog/disaggregated-inference-at-scale-with-pytorch-vllm/","PyTorch Foundation"],["tool","NVIDIA Dynamo","https://github.com/ai-dynamo/dynamo","GitHub"]]}},
+
+{n:9,theme:"Unit economics and the router",
+ focus:"Turn cost reading into code. This is where the roadmap stops being about latency and starts being about margin.",
+ med:["t","Text-first."],
+ del:"A router that picks a backend by cost, latency and quality, plus per-request token budgeting with cost on the dashboard.",
+ days:[
+  {k:"read",t:["CORE"],x:"LLM Inference Economics from First Principles: GPU-hour-to-token math, and why utilization rather than price per hour drives cost.",r:[["text","LLM Inference Economics from First Principles","https://www.tensoreconomics.com/p/llm-inference-economics-from-first","Tensor Economics"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Take the formula, hourly rate divided by peak tokens per second times seconds times utilization, and re-derive cost per million tokens for your own GPU using your week 5 throughput. Your numbers, not theirs.",r:[["text","Token Economics Across Traffic Profiles","https://www.digitalocean.com/community/tutorials/llm-inference-cost","DigitalOcean · worked formula"],["text","LLM Engineer's Almanac","https://modal.com/llm-almanac/workloads","Modal"]]},
+  {k:"read",t:["CORE"],x:"Optimizing AI Inference at Character.AI. A 33x serving cost reduction via int8 on weights, activations and KV cache plus multi-query attention and cross-layer KV sharing. Every lever is one you studied in weeks 6 and 7.",r:[["text","Optimizing AI Inference at Character.AI","https://blog.character.ai/optimizing-ai-inference-at-character-ai-2/","Character.AI engineering"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Build the router: a thin service that picks cheap-small or expensive-large under a cost, latency and quality policy, logging the chosen path and its cost to Prometheus.",r:[]},
+  {k:"build",t:["CORE","BUILD"],x:"Add token-budgeting middleware that caps and accounts tokens per request. Put per-request cost on the dashboard next to latency. Cost and latency on one screen is the point of the week.",r:[]}],
+ buf:{x:"Read the NVIDIA optimization survey as a consolidation pass over weeks 1 through 9.",r:[["text","Mastering LLM Techniques: Inference Optimization","https://developer.nvidia.com/blog/mastering-llm-techniques-inference-optimization/","NVIDIA"]]}},
+
+{n:10,theme:"Publish, then build the reading habit",
+ focus:"Ship the artifact and set up the inputs that keep it current.",
+ med:["t","Text-first. Publishing is a writing task, and the models to imitate are papers and methodology pages."],
+ del:"A published repo and writeup with pinned versions and reproducible commands, plus a weekly research session on the calendar.",
+ days:[
+  {k:"build",t:["CORE","BUILD"],x:"Draft the writeup: hardware, model, exact token lengths, concurrency sweep, p50, p95 and p99 for TTFT and inter-token latency, and throughput. Run the checklist against it first.",r:[["text","How to Benchmark LLM Engines","https://modal.com/llm-almanac/how-to-benchmark","Modal"],["text","MLPerf Inference","https://mlcommons.org/benchmarks/inference-datacenter/","MLCommons"]]},
+  {k:"build",t:["CORE","BUILD"],x:"Add quantization, speculative decoding and KV eviction as labeled variants with reproducible commands and pinned engine versions. Publish the repo and the post.",r:[]},
+  {k:"read",t:["CORE"],x:"Set up the weekly habit: MLSys, OSDI and NeurIPS efficiency tracks plus arXiv cs.DC. Queue three items.",r:[["text","arXiv cs.DC recent","https://arxiv.org/list/cs.DC/recent","arXiv"],["text","MLSys","https://mlsys.org","MLSys"]]},
+  {k:"read",t:["CORE"],x:"First habit session. One paper's abstract, method figure and evaluation in 30 minutes. Not the whole paper, that is the rule that makes it last.",r:[["text","vLLM blog","https://blog.vllm.ai","vLLM"],["text","LMSYS blog","https://lmsys.org/blog/","LMSYS"]]},
+  {k:"read",t:["STRETCH"],x:"Optional edge sampler. Where ONNX Runtime, TensorRT-LLM and WebLLM each fit, noting these are client-side runtimes rather than an extension of what you built.",r:[["docs","ONNX Runtime","https://onnxruntime.ai","onnxruntime.ai"],["tool","TensorRT-LLM","https://github.com/NVIDIA/TensorRT-LLM","NVIDIA"],["docs","WebLLM","https://webllm.mlc.ai","MLC"]]}],
+ buf:{x:"Circulate the benchmark for feedback and iterate on any methodology criticism. Criticism you can answer is proof the harness is real.",r:[]}}
+];
+
+const GATE = [
+ "Sweep the request rate. A single concurrency level is an anecdote.",
+ "Report exact input and output token lengths. KV cache size and therefore throughput depend entirely on them.",
+ "Report p50, p95 and p99. Means hide the tail that users feel.",
+ "Keep TTFT and inter-token latency separate. Collapsing prefill and decode into one number destroys the finding.",
+ "Do not measure at the saturation point where the server is preempting. Report the knee, not the collapse.",
+ "Avoid synthetic uniform-length traffic. Uniform lengths hide the heavy tail that makes continuous batching matter.",
+ "Account for tokenizer differences between engines before comparing tokens per second.",
+ "Pin engine versions and publish exact commands, so a critic can reproduce rather than speculate."
+];
+
+/* ---------------------------------------------------------------
+   Progress persistence.
+   Primary store is localStorage: no server, no accounts, works on
+   GitHub Pages and from a local file. If localStorage is blocked
+   (private mode, sandboxed frame) we fall back to memory for the
+   session and tell the user so they can export before closing.
+   Cross-device is handled by the sync link and the JSON export
+   rather than by a backend.
+------------------------------------------------------------------ */
+const KEY = "llm-inference-roadmap:v1";
+let state = {days:{}, gate:{}};
+let durable = true;
+
+function storageOK(){
+  try{
+    const probe = "__probe__";
+    window.localStorage.setItem(probe, "1");
+    window.localStorage.removeItem(probe);
+    return true;
+  }catch(e){ return false; }
+}
+
+function load(){
+  durable = storageOK();
+  if(durable){
+    try{
+      const raw = window.localStorage.getItem(KEY);
+      if(raw) state = Object.assign(state, JSON.parse(raw));
+    }catch(e){ /* corrupt value, start clean */ }
+  }
+  const fromLink = readHash();
+  if(fromLink){ state = fromLink; save(); history.replaceState(null,"",location.pathname+location.search); }
+}
+
+function save(){
+  if(!durable) return;
+  try{ window.localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){ durable = false; paintWarn(); }
+}
+
+/* --- compact encoding for the sync link: 58 flags into 12 chars --- */
+const ALPHA = "0123456789abcdefghijklmnopqrstuv";
+function slots(){
+  const s = [];
+  for(let w=1; w<=10; w++) for(let d=0; d<5; d++) s.push(["days", id(w,d)]);
+  for(let g=0; g<GATE.length; g++) s.push(["gate", String(g)]);
+  return s;
+}
+function encode(){
+  const bits = slots().map(([bucket,k]) => state[bucket][k] ? "1" : "0").join("");
+  let out = "";
+  for(let i=0; i<bits.length; i+=5) out += ALPHA[parseInt(bits.slice(i,i+5).padEnd(5,"0"), 2)];
+  return out;
+}
+function decode(str){
+  let bits = "";
+  for(const ch of str.toLowerCase()){
+    const v = ALPHA.indexOf(ch);
+    if(v < 0) return null;
+    bits += v.toString(2).padStart(5,"0");
+  }
+  const next = {days:{}, gate:{}};
+  slots().forEach(([bucket,k], i) => { if(bits[i] === "1") next[bucket][k] = true; });
+  return next;
+}
+function readHash(){
+  const m = /[#&]p=([0-9a-v]+)/i.exec(location.hash || "");
+  return m ? decode(m[1]) : null;
+}
+
+function flash(btn, label){
+  const original = btn.textContent;
+  btn.textContent = label;
+  btn.classList.add("said");
+  setTimeout(()=>{ btn.textContent = original; btn.classList.remove("said"); }, 1600);
+}
+function paintWarn(){
+  const el = document.getElementById("twarn");
+  if(el) el.classList.toggle("on", !durable);
+}
+const pad = n => String(n).padStart(2,"0");
+const id = (w,d) => "w"+w+"d"+d;
+
+function res(list){
+  if(!list||!list.length) return "";
+  return `<ul class="res">${list.map(([type,title,url,meta])=>
+    `<li><span class="rt ${type}">${type}</span><span><a class="lk" href="${url}" target="_blank" rel="noopener">${title}</a><span class="meta">${meta||""}</span></span></li>`).join("")}</ul>`;
+}
+function dayRow(w,i,d){
+  const key = id(w,i);
+  const tags = d.t.map(t=>{
+    const cls = t==="STRETCH"?"stretch":t==="SKIM"?"skim":t==="BUILD"?"build":"core";
+    const label = t==="SKIM"?"skim if known":t==="BUILD"?"build":t.toLowerCase();
+    return `<span class="tag ${cls}">${label}</span>`;
+  }).join("");
+  return `<div class="day" id="${key}">
+    <input class="chk" type="checkbox" data-key="${key}" aria-label="Mark week ${w} ${DAYS[i]} complete">
+    <div class="day-d">${DAYS[i]}</div>
+    <div class="day-body">
+      <div class="tags"><span class="tag ${d.k}">${d.k==="read"?"read":"build"}</span>${tags}</div>
+      <p>${d.x}</p>${res(d.r)}
+    </div></div>`;
+}
+function renderNav(){
+  document.getElementById("nav").innerHTML =
+    WEEKS.map(w=>`<a href="#wk${w.n}" data-wk="${w.n}">W${pad(w.n)}</a>`).join("")
+    + `<a href="#setup">Setup</a><a href="#gate">Checklist</a><a href="#decisions">Decisions</a><a href="#reference">Reference</a>`;
+}
+function renderWeeks(){
+  document.getElementById("weeks").innerHTML = WEEKS.map(w=>`
+    <article class="wk" id="wk${w.n}">
+      <div class="wk-head">
+        <div class="wk-n">${pad(w.n)}<span>WEEK</span></div>
+        <div>
+          <button class="wk-toggle" data-wk="${w.n}" aria-label="Toggle all sessions in week ${w.n}"><span data-count="${w.n}">0/5</span></button>
+          <h3 class="wk-theme">${w.theme}</h3>
+          <p class="wk-focus">${w.focus}</p>
+          <p class="wk-med">Medium · <b class="${w.med[0]}">${w.med[1]}</b></p>
+          <div class="wk-del"><b>Deliverable</b><span>${w.del}</span></div>
+        </div>
+      </div>
+      <div class="days">
+        ${w.days.map((d,i)=>dayRow(w.n,i,d)).join("")}
+        <div class="day buf"><span></span><div class="day-d">Buffer</div>
+          <div class="day-body"><p>${w.buf.x}</p>${res(w.buf.r)}</div></div>
+      </div>
+    </article>`).join("");
+}
+function renderGate(){
+  document.getElementById("gatelist").innerHTML = GATE.map((t,i)=>
+    `<label><input class="chk" type="checkbox" data-gate="${i}"><span>${t}</span></label>`).join("");
+}
+function paint(){
+  let done = 0;
+  document.querySelectorAll('.chk[data-key]').forEach(cb=>{
+    const on = !!state.days[cb.dataset.key];
+    cb.checked = on; cb.closest(".day").classList.toggle("done", on);
+    if(on) done++;
+  });
+  document.querySelectorAll('.chk[data-gate]').forEach(cb=>{ cb.checked = !!state.gate[cb.dataset.gate]; });
+  document.querySelectorAll(".wk-toggle").forEach(btn=>{
+    const w = Number(btn.dataset.wk);
+    const n = [0,1,2,3,4].filter(d => state.days[id(w,d)]).length;
+    btn.querySelector("span").textContent = n + "/5";
+    btn.classList.toggle("full", n === 5);
+    btn.title = n === 5 ? "Clear this week" : "Mark this week done";
+  });
+  const pct = Math.round((done/50)*100);
+  const wk = done ? Math.min(10, Math.floor(done/5)+1) : 0;
+  document.getElementById("tnum").innerHTML =
+    `${done}<small>/ 50 sessions${done ? ` · week ${wk} · ${(done*0.5).toFixed(1).replace(/\.0$/,"")} h` : ""}</small>`;
+  document.getElementById("tbar").style.width = pct + "%";
+  paintWarn();
+}
+function boot(){
+  renderNav(); renderWeeks(); renderGate(); paint();
+  document.body.addEventListener("change", e=>{
+    const cb = e.target;
+    if(cb.dataset && cb.dataset.key){
+      if(cb.checked) state.days[cb.dataset.key] = true;
+      else delete state.days[cb.dataset.key];
+      save(); paint();
+    }
+    if(cb.dataset && cb.dataset.gate!==undefined){
+      if(cb.checked) state.gate[cb.dataset.gate] = true;
+      else delete state.gate[cb.dataset.gate];
+      save(); paint();
+    }
+  });
+
+  /* week-level toggle: fills an incomplete week, clears a complete one */
+  document.getElementById("weeks").addEventListener("click", e=>{
+    const btn = e.target.closest(".wk-toggle");
+    if(!btn) return;
+    const w = Number(btn.dataset.wk);
+    const keys = [0,1,2,3,4].map(d => id(w,d));
+    const allDone = keys.every(k => state.days[k]);
+    keys.forEach(k => { if(allDone) delete state.days[k]; else state.days[k] = true; });
+    save(); paint();
+  });
+
+  document.getElementById("tlink").addEventListener("click", async e=>{
+    const url = location.origin + location.pathname + "#p=" + encode();
+    try{ await navigator.clipboard.writeText(url); flash(e.target, "Copied"); }
+    catch(err){ window.prompt("Copy this link:", url); }
+  });
+  document.getElementById("texp").addEventListener("click", e=>{
+    const blob = new Blob([JSON.stringify({app:"llm-inference-roadmap", version:1, saved:new Date().toISOString(), state}, null, 2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "inference-roadmap-progress.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    flash(e.target, "Saved");
+  });
+  document.getElementById("timp").addEventListener("click", ()=> document.getElementById("tfile").click());
+  document.getElementById("tfile").addEventListener("change", ev=>{
+    const file = ev.target.files && ev.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const parsed = JSON.parse(reader.result);
+        const incoming = parsed.state || parsed;
+        if(!incoming || typeof incoming !== "object") throw new Error("bad shape");
+        state = {days: incoming.days || {}, gate: incoming.gate || {}};
+        save(); paint();
+        flash(document.getElementById("timp"), "Loaded");
+      }catch(err){ window.alert("That file could not be read as a progress export."); }
+      ev.target.value = "";
+    };
+    reader.readAsText(file);
+  });
+  document.getElementById("trst").addEventListener("click", ()=>{
+    if(!window.confirm("Clear all ticked sessions? This cannot be undone.")) return;
+    state = {days:{}, gate:{}}; save(); paint();
+  });
+  const links = [...document.querySelectorAll('.nav a[data-wk]')];
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      if(!en.isIntersecting) return;
+      const n = en.target.id.replace("wk","");
+      links.forEach(a=>a.classList.toggle("here", a.dataset.wk===n));
+    });
+  },{rootMargin:"-64px 0px -70% 0px"});
+  WEEKS.forEach(w=>{ const el=document.getElementById("wk"+w.n); if(el) obs.observe(el); });
+}
+load();
+boot();
+</script>
+</body>
+</html>
