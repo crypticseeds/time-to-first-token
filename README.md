@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.png" alt="Learn LLM Inference Serving by Shipping One Service">
+</p>
+
 # Learn LLM Inference Serving by Shipping One Service
 
 A 10-week, 30-minutes-a-day roadmap for engineers who want to actually run LLM inference in production, not just read about it.
