@@ -8,6 +8,8 @@ A 10-week, 30-minutes-a-day roadmap for engineers who want to actually run LLM i
 
 Fifty sessions. Every one of them feeds a single artifact: an OpenAI-compatible inference service that you deploy on a rented GPU, instrument, load test past 1000 concurrent requests, optimize with quantization and speculative decoding, put a cost-aware router in front of, and publish as a reproducible benchmark.
 
+**Companion implementation.** The service and deployment configuration built while following this roadmap live in [crypticseeds/inference-engineering](https://github.com/crypticseeds/inference-engineering), with the benchmark harness and results in its [benchmarks workspace](https://github.com/crypticseeds/inference-engineering/tree/main/benchmarks). This repository remains the learning plan, progress tracker, and revision record.
+
 The alternative approach, running seventeen disconnected experiments, spends most of its time on setup. One service that keeps growing gets you the same coverage and leaves you with something to show.
 
 ---
