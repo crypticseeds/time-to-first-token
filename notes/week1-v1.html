@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en" data-mode="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Week 1 Revision Guide - The Mental Model</title>
+  <style>
+    :root {
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --bg: #faf5ec;
+      --surface: #f4ecdf;
+      --ink: #000;
+      --body: #1a1a1a;
+      --muted: #59534e;
+      --accent: #9a4b00;
+      --accent-soft: #9a4b0018;
+      --border: #202020;
+      --good: #007038;
+      --open: #00667a;
+      --btn-bw: 1.5px;
+    }
+    html[data-mode="dark"] {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --ink: #eeeae4;
+      --body: #cfc9c0;
+      --muted: #a8a29b;
+      --accent: #ff8100;
+      --accent-soft: #ff81001c;
+      --border: #6b6560;
+      --good: #00c26e;
+      --open: #00abd6;
+    }
+    * { box-sizing: border-box; }
+    html { color-scheme: light; scroll-behavior: smooth; }
+    html[data-mode="dark"] { color-scheme: dark; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--body);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.65;
+    }
+    button, textarea { font: inherit; }
+    button { color: inherit; }
+    :focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
+    textarea:focus-visible { outline: 1px solid var(--accent); outline-offset: -1px; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--border);
+      background: color-mix(in srgb, var(--bg) 94%, transparent);
+      backdrop-filter: blur(8px);
+    }
+    .topbar-in {
+      max-width: 980px;
+      min-height: 54px;
+      margin: auto;
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .topbar-title {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: .02em;
+    }
+    .actions { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+    .count { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+    .btn {
+      height: 32px;
+      padding: 0 12px;
+      border: var(--btn-bw) solid var(--border);
+      border-radius: 0;
+      background: transparent;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: calc(3em - (var(--btn-bw) * 2));
+      text-transform: uppercase;
+    }
+    .btn:hover { background: var(--ink); color: var(--bg); }
+    .ico-btn {
+      width: 32px;
+      height: 32px;
+      padding: 6px;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      cursor: pointer;
+      display: inline-grid;
+      place-items: center;
+    }
+    .ico-btn:hover { color: var(--accent); }
+    .ico-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.75; }
+    .i-sun { display: block; }
+    .i-moon { display: none; }
+    html[data-mode="dark"] .i-sun { display: none; }
+    html[data-mode="dark"] .i-moon { display: block; }
+    main { width: min(900px, calc(100% - 40px)); margin: 0 auto; padding: 54px 0 90px; }
+    .hero { padding-bottom: 50px; border-bottom: 1px solid var(--border); }
+    .eyebrow { color: var(--accent); font: 700 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+    h1 { max-width: 740px; margin: 16px 0 18px; color: var(--ink); font-size: clamp(36px, 7vw, 66px); line-height: .98; letter-spacing: -.055em; }
+    .lede { max-width: 680px; margin: 0; color: var(--muted); font-size: 19px; }
+    .summary {
+      margin-top: 30px;
+      padding: 18px 20px;
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+    }
+    .summary strong { color: var(--ink); }
+    .sec { position: relative; padding-top: 58px; }
+    .sec-label { color: var(--ink); font: 700 13px/1 var(--mono); letter-spacing: .08em; }
+    .sec-label b { color: var(--accent); }
+    .section-rule {
+      min-height: 31px;
+      margin: 9px 0 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font: 11px/1.3 var(--mono);
+    }
+    .section-rule .cmt-toggle { margin-left: auto; }
+    .section-rule .sq { width: 8px; height: 8px; background: var(--accent); flex: 0 0 auto; }
+    .sec[data-has-comment="true"] .section-rule { border-top-color: var(--accent); }
+    .sec[data-has-comment="true"] .cmt-toggle { color: var(--accent); }
+    h2 { margin: 0 0 16px; color: var(--ink); font-size: clamp(25px, 4vw, 36px); line-height: 1.1; letter-spacing: -.035em; }
+    h3 { margin: 30px 0 8px; color: var(--ink); font-size: 18px; line-height: 1.3; }
+    p { margin: 0 0 15px; }
+    ul, ol { margin: 10px 0 18px; padding-left: 22px; }
+    li { margin: 7px 0; }
+    strong { color: var(--ink); }
+    code, .formula { font-family: var(--mono); }
+    code { padding: 1px 4px; background: var(--surface); font-size: .9em; }
+    .formula {
+      margin: 16px 0;
+      padding: 15px 16px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--ink);
+      overflow-x: auto;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid var(--border); }
+    .card { min-width: 0; padding: 18px; border-right: 1px solid var(--border); }
+    .card:last-child { border-right: 0; }
+    .card .tag { color: var(--accent); font: 700 11px/1 var(--mono); text-transform: uppercase; }
+    .card h3 { margin-top: 10px; }
+    .card p { margin-bottom: 0; font-size: 14px; }
+    .flow { display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; margin: 22px 0; }
+    .step { padding: 20px; border: 1px solid var(--border); background: var(--surface); }
+    .step.accent { border-top: 5px solid var(--accent); }
+    .step b { display: block; margin-bottom: 7px; color: var(--ink); }
+    .arrow { display: grid; place-items: center; width: 44px; color: var(--accent); font: 700 22px var(--mono); }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    th { color: var(--ink); background: var(--surface); font: 700 12px/1.4 var(--mono); }
+    tr:last-child td { border-bottom: 0; }
+    .callout { margin: 22px 0; padding: 17px 18px; border: 1px solid var(--border); }
+    .callout b:first-child { display: block; margin-bottom: 6px; color: var(--open); font: 700 12px/1 var(--mono); text-transform: uppercase; }
+    .status { border-left: 4px solid var(--good); }
+    .status.pending { border-left-color: var(--accent); }
+    .quiz li { padding: 7px 0 14px; border-bottom: 1px solid color-mix(in srgb, var(--border) 30%, transparent); }
+    details { margin-top: 7px; }
+    summary { color: var(--open); cursor: pointer; font-weight: 700; }
+    a { color: var(--open); text-underline-offset: 3px; }
+    .cmt-panel { display: none; margin-top: 24px; padding: 15px; border: 1px solid var(--accent); background: var(--surface); }
+    .cmt-panel.open { display: block; }
+    .cmt-head { display: flex; align-items: center; justify-content: space-between; color: var(--ink); font: 700 11px/1 var(--mono); text-transform: uppercase; }
+    .cmt-panel textarea, .catchall textarea {
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px;
+      resize: vertical;
+      border: 1px solid var(--border);
+      border-radius: 0;
+      background: var(--bg);
+      color: var(--body);
+    }
+    .quotes { margin-top: 10px; }
+    .quote { display: flex; gap: 10px; margin: 8px 0; padding: 9px; border-left: 3px solid var(--accent); font-size: 13px; }
+    .quote span { flex: 1; }
+    .quote button { border: 0; background: none; color: var(--muted); cursor: pointer; }
+    .badge { min-width: 16px; height: 16px; padding: 0 4px; border: 1px solid currentColor; display: none; place-items: center; font: 9px/1 var(--mono); }
+    .sec[data-has-comment="true"] .badge { display: grid; }
+    .catchall { margin-top: 60px; padding-top: 28px; border-top: 1px solid var(--border); }
+    .saved { position: fixed; right: 22px; bottom: 22px; z-index: 30; padding: 8px 10px; background: var(--ink); color: var(--bg); opacity: 0; pointer-events: none; transition: opacity .18s; font: 700 11px var(--mono); }
+    .saved.on { opacity: 1; }
+    .storage-warning { position: fixed; right: 22px; bottom: 22px; z-index: 31; display: none; max-width: 320px; padding: 10px 12px; border: 1px solid var(--accent); background: var(--bg); color: var(--ink); font: 700 11px/1.5 var(--mono); }
+    .storage-warning.on { display: block; }
+    .sel-chip { position: absolute; z-index: 40; display: none; padding: 7px 9px; border: 1px solid var(--accent); background: var(--bg); color: var(--ink); cursor: pointer; font: 700 11px var(--mono); }
+    .muted { color: var(--muted); }
+    @media (max-width: 700px) {
+      .count { display: none; }
+      .topbar-in { padding-inline: 12px; }
+      .topbar-title { max-width: 135px; }
+      main { width: min(100% - 28px, 900px); padding-top: 38px; }
+      .grid { grid-template-columns: 1fr; }
+      .card { border-right: 0; border-bottom: 1px solid var(--border); }
+      .card:last-child { border-bottom: 0; }
+      .flow { grid-template-columns: 1fr; }
+      .arrow { width: auto; height: 38px; transform: rotate(90deg); }
+      .btn { padding-inline: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-in">
+      <div class="topbar-title"><b>WEEK 1 v1</b> | revision guide</div>
+      <div class="actions">
+        <span class="count" id="count">0 feedback sections</span>
+        <button class="btn" id="copy">Copy feedback</button>
+        <button class="ico-btn" id="mode" aria-label="Toggle colour mode">
+          <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"></path></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <header class="hero">
+      <div class="eyebrow">Week 1 | The mental model</div>
+      <h1>Why fast models are usually a data movement problem</h1>
+      <p class="lede">A compact guide to Graphics Processing Units (GPUs), bottlenecks, arithmetic intensity, the roofline model, and why prefill and decode behave differently.</p>
+      <div class="summary"><strong>The whole week in one sentence:</strong> measure whether a workload is limited by computation, memory movement, or overhead, then apply an optimization that reduces that specific limit.</div>
+    </header>
+
+    <section class="sec" data-sec="Core mental model">
+      <div class="sec-label">[ <b>01 CORE MODEL</b> ]</div>
+      <div class="section-rule">Classify before optimizing<button class="ico-btn cmt-toggle" aria-label="Comment on Core mental model" aria-expanded="false" aria-controls="comment-core-model"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"></path></svg><i class="badge"></i></button><i class="sq"></i></div>
+      <h2>Three places time can go</h2>
+      <div class="grid">
+        <article class="card"><span class="tag">01</span><h3>Computation</h3><p>The GPU is busy performing mathematical work. The limit is its peak <strong>Floating-Point Operations Per Second (FLOPS)</strong>. Large matrix multiplications often enter this regime.</p></article>
+        <article class="card"><span class="tag">02</span><h3>Memory movement</h3><p>The GPU waits for weights or activations to move from memory to compute units. The limit is memory bandwidth, measured in bytes per second.</p></article>
+        <article class="card"><span class="tag">03</span><h3>Overhead</h3><p>The GPU waits for work to be prepared or launched. Python execution, framework dispatch, kernel launches, and synchronization are common sources.</p></article>
+      </div>
+      <div class="callout"><b>Diagnostic rule</b>More compute power does not fix a memory-bound task. More memory bandwidth does not fix a compute-bound task. Rewriting Python does not help when one large matrix multiplication already keeps the GPU busy.</div>
+      <h3>The factory picture</h3>
+      <p>Think of compute units as a factory, device memory as a warehouse, and memory bandwidth as the road between them. A larger factory is wasted if the road cannot deliver materials quickly enough.</p>
+      <div class="cmt-panel" id="comment-core-model"><div class="cmt-head">Comment | <span class="sec-name"></span><button class="ico-btn x" aria-label="Close comment">x</button></div><div class="quotes"></div><textarea rows="3" aria-label="Comment on Core mental model" placeholder="Your comment on this section..."></textarea></div>
+    </section>
+
+    <section class="sec" data-sec="GPU basics">
+      <div class="sec-label">[ <b>02 GPU BASICS</b> ]</div>
+      <div class="section-rule">Many simple operations in parallel<button class="ico-btn cmt-toggle" aria-label="Comment on GPU basics" aria-expanded="false" aria-controls="comment-gpu-basics"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"></path></svg><i class="badge"></i></button><i class="sq"></i></div>
+      <h2>Why a GPU is fast, and why memory still matters</h2>
+      <p>A Central Processing Unit (CPU) has a small number of powerful cores optimized for varied, sequential work. A Graphics Processing Unit (GPU) has many simpler execution units optimized to perform similar operations across large amounts of data.</p>
+      <ul>
+        <li><strong>Threads</strong> are individual lanes of work. Hardware schedules them in groups, commonly called warps.</li>
+        <li><strong>Streaming Multiprocessors (SMs)</strong> execute groups of threads and contain compute units, registers, and shared memory.</li>
+        <li><strong>Single Instruction, Multiple Threads (SIMT)</strong> means many threads execute the same instruction on different data. Branches that make threads follow different paths reduce efficiency.</li>
+        <li><strong>Tensor Cores</strong> are specialized units for matrix multiplication. Published peak GPU FLOPS usually assume these units and supported data types are used.</li>
+      </ul>
+      <h3>Memory hierarchy</h3>
+      <p>Memory close to compute is fast but small. Memory farther away is larger but slower. Registers and Static Random-Access Memory (SRAM), including shared memory and caches, are close to computation. High Bandwidth Memory (HBM), a form of Dynamic Random-Access Memory (DRAM), stores model weights and large tensors but must be read across a limited-bandwidth connection.</p>
+      <div class="flow">
+        <div class="step accent"><b>High Bandwidth Memory (HBM)</b>Large capacity, higher access cost. Model weights and large activations live here.</div>
+        <div class="arrow">-&gt;</div>
+        <div class="step"><b>On-chip memory and compute</b>Small and fast. Useful data should be reused here before it is written back.</div>
+      </div>
+      <div class="callout"><b>Key consequence</b>Every unnecessary trip to HBM costs time. This is why data reuse and operator fusion can matter more than reducing a small number of mathematical operations.</div>
+      <div class="cmt-panel" id="comment-gpu-basics"><div class="cmt-head">Comment | <span class="sec-name"></span><button class="ico-btn x" aria-label="Close comment">x</button></div><div class="quotes"></div><textarea rows="3" aria-label="Comment on GPU basics" placeholder="Your comment on this section..."></textarea></div>
+    </section>
+
+    <section class="sec" data-sec="Arithmetic intensity and roofline">
+      <div class="sec-label">[ <b>03 ROOFLINE</b> ]</div>
+      <div class="section-rule">Connect software work to hardware limits<button class="ico-btn cmt-toggle" aria-label="Comment on Arithmetic intensity and roofline" aria-expanded="false" aria-controls="comment-roofline"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"></path></svg><i class="badge"></i></button><i class="sq"></i></div>
+      <h2>Arithmetic intensity tells you which limit wins</h2>
+      <p><strong>Arithmetic intensity</strong> is the amount of computation performed for each byte moved from memory.</p>
+      <div class="formula">Arithmetic intensity = Floating-Point Operations (FLOPs) / bytes moved</div>
+      <p>Do not confuse a <strong>Floating-Point Operation (FLOP)</strong>, which counts work, with <strong>Floating-Point Operations Per Second (FLOPS)</strong>, which measures a rate.</p>
+      <p>The <strong>roofline model</strong> gives a simple upper bound for performance:</p>
+      <div class="formula">Attainable FLOPS = min(peak FLOPS, memory bandwidth x arithmetic intensity)</div>
+      <ul>
+        <li>Low arithmetic intensity: the bandwidth term is smaller, so the operation is <strong>memory-bound</strong>.</li>
+        <li>High arithmetic intensity: peak computation is smaller, so the operation is <strong>compute-bound</strong>.</li>
+        <li>The <strong>ridge point</strong> is where the two limits meet.</li>
+      </ul>
+      <div class="formula">Ridge point = peak FLOPS / peak memory bandwidth</div>
+      <p>An operation below the ridge point needs more reuse or fewer bytes moved. An operation above it benefits from faster computation or fewer FLOPs.</p>
+      <div class="callout"><b>Important limitation</b>The roofline is an upper bound, not a prediction of exact speed. Real performance is lower because of launch overhead, communication, imperfect kernels, synchronization, and incomplete use of peak hardware.</div>
+      <div class="cmt-panel" id="comment-roofline"><div class="cmt-head">Comment | <span class="sec-name"></span><button class="ico-btn x" aria-label="Close comment">x</button></div><div class="quotes"></div><textarea rows="3" aria-label="Comment on Arithmetic intensity and roofline" placeholder="Your comment on this section..."></textarea></div>
+    </section>
+
+    <section class="sec" data-sec="Prefill and decode">
+      <div class="sec-label">[ <b>04 INFERENCE</b> ]</div>
+      <div class="section-rule">One request, two different workloads<button class="ico-btn cmt-toggle" aria-label="Comment on Prefill and decode" aria-expanded="false" aria-controls="comment-inference"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"></path></svg><i class="badge"></i></button><i class="sq"></i></div>
+      <h2>Prefill and decode need different optimizations</h2>
+      <div class="flow">
+        <div class="step accent"><b>Prefill</b>Process all prompt tokens, largely in parallel. Large matrix-matrix operations reuse weights across many tokens. Arithmetic intensity is usually high, so long prompts can become compute-bound.</div>
+        <div class="arrow">-&gt;</div>
+        <div class="step"><b>Decode</b>Generate one token at a time because each token depends on the previous one. At a small batch size, each step reads most model weights for little new work. Arithmetic intensity is low, so decode is usually memory-bound.</div>
+      </div>
+      <p>The first phase strongly affects <strong>Time to First Token (TTFT)</strong>. The second phase strongly affects <strong>Time Per Output Token (TPOT)</strong>, sometimes called inter-token latency.</p>
+      <h3>Key-Value cache</h3>
+      <p>The <strong>Key-Value (KV) cache</strong> stores attention keys and values for earlier tokens. Without it, the model would repeatedly recompute old attention state at every decode step. The cache saves computation, but consumes memory that grows with the number of requests and sequence lengths.</p>
+      <h3>Batching changes the regime</h3>
+      <p>When several requests decode together, the same weight read supports more token computations. Arithmetic intensity and total throughput rise. However, each user may wait longer, and the larger KV cache reduces the number of requests that fit in memory.</p>
+      <div class="callout"><b>Remember</b>Prefill is commonly compute-bound; low-batch decode is commonly memory-bound. This asymmetry explains many serving techniques later in the roadmap.</div>
+      <div class="cmt-panel" id="comment-inference"><div class="cmt-head">Comment | <span class="sec-name"></span><button class="ico-btn x" aria-label="Close comment">x</button></div><div class="quotes"></div><textarea rows="3" aria-label="Comment on Prefill and decode" placeholder="Your comment on this section..."></textarea></div>
+    </section>
+
+    <section class="sec" data-sec="Optimizations">
+      <div class="sec-label">[ <b>05 OPTIMIZATIONS</b> ]</div>
+      <div class="section-rule">Match the fix to the bottleneck<button class="ico-btn cmt-toggle" aria-label="Comment on Optimizations" aria-expanded="false" aria-controls="comment-optimizations"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"></path></svg><i class="badge"></i></button><i class="sq"></i></div>
+      <h2>Use the diagnosis to choose the tool</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Bottleneck</th><th>Useful response</th><th>Why it helps</th></tr></thead>
+          <tbody>
+            <tr><td>Memory bandwidth</td><td>Operator fusion, quantization, batching, data reuse</td><td>Moves fewer bytes or performs more work per byte.</td></tr>
+            <tr><td>Computation</td><td>Faster matrix kernels, lower-precision compute, fewer FLOPs, more compute hardware</td><td>Reduces or accelerates the mathematical work.</td></tr>
+            <tr><td>Overhead</td><td>Combine small operations, compile graphs, reduce kernel launches, use larger work units</td><td>Keeps the GPU busy instead of waiting for dispatch.</td></tr>
+            <tr><td>Memory capacity</td><td>Quantization, KV cache management, model parallelism</td><td>Makes weights and per-request state fit, but may introduce communication or quality costs.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>Operator fusion</h3>
+      <p>A GPU kernel is a unit of work launched on the GPU. Separate kernels often write an intermediate tensor to HBM and read it back. <strong>Operator fusion</strong> combines compatible operations into one kernel so the intermediate value can stay on-chip. Fusion saves memory traffic and launch overhead.</p>
+      <div class="callout"><b>Counterintuitive result</b>Adding mathematical work can be nearly free in a memory-bound fused kernel. Recomputing a small value can even be faster than loading it from memory.</div>
+      <div class="cmt-panel" id="comment-optimizations"><div class="cmt-head">Comment | <span class="sec-name"></span><button class="ico-btn x" aria-label="Close comment">x</button></div><div class="quotes"></div><textarea rows="3" aria-label="Comment on Optimizations" placeholder="Your comment on this section..."></textarea></div>
+    </section>
+
+    <section class="sec" data-sec="Worked example">
+      <div class="sec-label">[ <b>06 WORKED EXAMPLE</b> ]</div>
+      <div class="section-rule">Approximate decode at batch size one<button class="ico-btn cmt-toggle" aria-label="Comment on Worked example" aria-expanded="false" aria-controls="comment-example"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"></path></svg><i class="badge"></i></button><i class="sq"></i></div>
+      <h2>A useful estimate for a 7-billion-parameter model</h2>
+      <p>Assume 7 billion parameters, 16-bit weights, and batch size one. This is deliberately approximate: it focuses on weight reads and the main matrix operations.</p>
+      <ol>
+        <li><strong>Weight bytes:</strong> 7 billion parameters x 2 bytes = about 14 gigabytes.</li>
+        <li><strong>Work per decoded token:</strong> about 2 FLOPs per parameter = about 14 billion FLOPs.</li>
+        <li><strong>Arithmetic intensity:</strong> 14 billion FLOPs / 14 billion bytes = about 1 FLOP per byte.</li>
+      </ol>
+      <div class="formula">Approximate batch-one decode intensity = 2 / bytes per weight</div>
+      <p>This gives about 1 FLOP per byte for 16-bit weights, 2 FLOPs per byte for 8-bit weights, and 4 FLOPs per byte for 4-bit weights. A modern GPU ridge point is much higher, so batch-one decode is strongly memory-bound.</p>
+      <div class="callout status pending"><b>Your Week 1 deliverable</b>This generic example is not a substitute for your own figure. To personalize it, record the exact model, parameter count, weight precision, target GPU peak FLOPS, and target GPU memory bandwidth. Then compare your arithmetic intensity with that GPU's ridge point.</div>
+      <h3>Worksheet</h3>
+      <div class="formula">Model: ______ | parameters: ______ | bytes per weight: ______</div>
+      <div class="formula">Decode FLOPs/token ~= 2 x parameters = ______</div>
+      <div class="formula">Weight bytes ~= parameters x bytes/weight = ______</div>
+      <div class="formula">Arithmetic intensity ~= FLOPs/token / weight bytes = ______ FLOPs/byte</div>
+      <div class="formula">GPU ridge point = peak FLOPS / memory bandwidth = ______ FLOPs/byte</div>
+      <div class="formula">Conclusion: intensity is [below / above] ridge point, so decode is likely [memory / compute]-bound.</div>
+      <div class="cmt-panel" id="comment-example"><div class="cmt-head">Comment | <span class="sec-name"></span><button class="ico-btn x" aria-label="Close comment">x</button></div><div class="quotes"></div><textarea rows="3" aria-label="Comment on Worked example" placeholder="Your comment on this section..."></textarea></div>
+    </section>
+
+    <section class="sec" data-sec="Revision check">
+      <div class="sec-label">[ <b>07 REVISION</b> ]</div>
+      <div class="section-rule">Test recall, not recognition<button class="ico-btn cmt-toggle" aria-label="Comment on Revision check" aria-expanded="false" aria-controls="comment-revision"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"></path></svg><i class="badge"></i></button><i class="sq"></i></div>
+      <h2>Five questions to answer from memory</h2>
+      <ol class="quiz">
+        <li>What are the three performance regimes?<details><summary>Show answer</summary>Compute-bound, memory-bandwidth-bound, and overhead-bound.</details></li>
+        <li>What does arithmetic intensity measure?<details><summary>Show answer</summary>The number of Floating-Point Operations (FLOPs) performed for each byte moved from memory.</details></li>
+        <li>Why is low-batch decode usually memory-bound?<details><summary>Show answer</summary>Each sequential token step reads most model weights but performs little work with each byte before the next step.</details></li>
+        <li>Why is prefill more likely to be compute-bound?<details><summary>Show answer</summary>Many prompt tokens are processed in parallel, allowing the same weights to be reused in large matrix operations.</details></li>
+        <li>Why does operator fusion help?<details><summary>Show answer</summary>It avoids intermediate writes and reads to High Bandwidth Memory (HBM) and reduces kernel-launch overhead.</details></li>
+      </ol>
+      <h3>Key points to retain</h3>
+      <ul>
+        <li>Classify the bottleneck before choosing an optimization.</li>
+        <li>Data movement is often slower than the small operation performed on the data.</li>
+        <li>Arithmetic intensity connects an algorithm to the hardware roofline.</li>
+        <li>Prefill and decode are different workloads and should be measured separately.</li>
+        <li>Real measurements still decide whether the simplified model is correct for your service.</li>
+      </ul>
+      <h3>Further reading</h3>
+      <p class="muted">Only revisit these when a concept above is unclear.</p>
+      <ul>
+        <li><a href="https://horace.io/brrr_intro.html">Making Deep Learning Go Brrrr From First Principles</a> - performance regimes, fusion, and overhead.</li>
+        <li><a href="https://kipp.ly/transformer-inference-arithmetic/">Transformer Inference Arithmetic</a> - model weights, Key-Value (KV) cache, batching, and latency estimates.</li>
+        <li><a href="https://www.databricks.com/blog/llm-inference-performance-engineering-best-practices">Large Language Model (LLM) Inference Performance Engineering</a> - prefill, decode, serving metrics, and Model Bandwidth Utilization (MBU).</li>
+      </ul>
+      <div class="cmt-panel" id="comment-revision"><div class="cmt-head">Comment | <span class="sec-name"></span><button class="ico-btn x" aria-label="Close comment">x</button></div><div class="quotes"></div><textarea rows="3" aria-label="Comment on Revision check" placeholder="Your comment on this section..."></textarea></div>
+    </section>
+
+    <section class="catchall">
+      <h2>Anything unclear?</h2>
+      <p class="muted">Write questions or corrections here. They are stored only in this browser.</p>
+      <textarea id="anything" rows="4" aria-label="Questions, corrections, or concepts to revisit" placeholder="Questions, corrections, or concepts to revisit..."></textarea>
+    </section>
+  </main>
+
+  <button class="sel-chip" id="sel-chip">Quote in comment</button>
+  <div class="saved" id="saved">Saved locally</div>
+  <div class="storage-warning" id="storage-warning" role="alert">Browser storage is unavailable. Comments will last only until this page closes.</div>
+
+  <script>
+    (function () {
+      var KEY = "ttft-week1-v1";
+      var state = { mode: "light", comments: {}, anything: "" };
+      var storageAvailable = true;
+      try { state = Object.assign(state, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (_) { storageAvailable = false; }
+
+      var root = document.documentElement;
+      var saved = document.getElementById("saved");
+      var storageWarning = document.getElementById("storage-warning");
+      var chip = document.getElementById("sel-chip");
+      var selected = null;
+      root.dataset.mode = state.mode || "light";
+      if (!storageAvailable) storageWarning.classList.add("on");
+
+      function flashSaved() {
+        saved.classList.add("on");
+        clearTimeout(flashSaved.timer);
+        flashSaved.timer = setTimeout(function () { saved.classList.remove("on"); }, 800);
+      }
+      function save() {
+        try {
+          localStorage.setItem(KEY, JSON.stringify(state));
+          flashSaved();
+        } catch (_) {
+          storageAvailable = false;
+          storageWarning.classList.add("on");
+        }
+        refresh();
+      }
+      function commentFor(name) {
+        if (!state.comments[name]) state.comments[name] = { text: "", quotes: [] };
+        return state.comments[name];
+      }
+      function renderQuotes(sec) {
+        var name = sec.dataset.sec;
+        var box = sec.querySelector(".quotes");
+        var data = commentFor(name);
+        box.innerHTML = "";
+        data.quotes.forEach(function (text, index) {
+          var row = document.createElement("div");
+          row.className = "quote";
+          var span = document.createElement("span");
+          span.textContent = '"' + text + '"';
+          var remove = document.createElement("button");
+          remove.type = "button";
+          remove.textContent = "Remove";
+          remove.addEventListener("click", function () {
+            data.quotes.splice(index, 1);
+            renderQuotes(sec);
+            save();
+          });
+          row.append(span, remove);
+          box.appendChild(row);
+        });
+      }
+      function refresh() {
+        var total = 0;
+        document.querySelectorAll(".sec").forEach(function (sec) {
+          var data = commentFor(sec.dataset.sec);
+          var amount = data.quotes.length + (data.text.trim() ? 1 : 0);
+          sec.dataset.hasComment = amount ? "true" : "false";
+          sec.querySelector(".badge").textContent = amount;
+          if (amount) total += 1;
+        });
+        document.getElementById("count").textContent = total + (total === 1 ? " feedback section" : " feedback sections");
+      }
+
+      document.querySelectorAll(".sec").forEach(function (sec) {
+        var name = sec.dataset.sec;
+        var data = commentFor(name);
+        var panel = sec.querySelector(".cmt-panel");
+        var toggle = sec.querySelector(".cmt-toggle");
+        var textarea = panel.querySelector("textarea");
+        sec.querySelector(".sec-name").textContent = name;
+        textarea.value = data.text || "";
+        if (data.text || data.quotes.length) { panel.classList.add("open"); toggle.setAttribute("aria-expanded", "true"); }
+        renderQuotes(sec);
+        toggle.addEventListener("click", function () { panel.classList.toggle("open"); toggle.setAttribute("aria-expanded", String(panel.classList.contains("open"))); if (panel.classList.contains("open")) textarea.focus(); });
+        sec.querySelector(".x").addEventListener("click", function () { panel.classList.remove("open"); toggle.setAttribute("aria-expanded", "false"); toggle.focus(); });
+        textarea.addEventListener("input", function () { data.text = textarea.value; save(); });
+      });
+
+      var anything = document.getElementById("anything");
+      anything.value = state.anything || "";
+      anything.addEventListener("input", function () { state.anything = anything.value; save(); });
+
+      document.getElementById("mode").addEventListener("click", function () {
+        state.mode = root.dataset.mode === "dark" ? "light" : "dark";
+        root.dataset.mode = state.mode;
+        save();
+      });
+
+      function offerQuote(event) {
+        var target = event.target;
+        if (target && target.closest && (target.closest(".cmt-panel") || target.closest(".topbar") || target.closest(".sel-chip"))) return;
+        setTimeout(function () {
+          var selection = window.getSelection();
+          chip.style.display = "none";
+          selected = null;
+          if (!selection || selection.isCollapsed) return;
+          var text = selection.toString().trim().replace(/\s+/g, " ");
+          if (!text || text.length > 400) return;
+          var node = selection.anchorNode && (selection.anchorNode.nodeType === 1 ? selection.anchorNode : selection.anchorNode.parentElement);
+          var sec = node && node.closest && node.closest(".sec");
+          if (!sec) return;
+          var rect = selection.getRangeAt(0).getBoundingClientRect();
+          selected = { sec: sec, text: text };
+          chip.style.left = Math.max(8, rect.left + window.scrollX) + "px";
+          chip.style.top = (rect.bottom + window.scrollY + 8) + "px";
+          chip.style.display = "block";
+        }, 0);
+      }
+      document.addEventListener("mouseup", offerQuote);
+      document.addEventListener("keyup", function (event) {
+        if (event.key.indexOf("Arrow") !== -1 || event.key === "Shift") offerQuote(event);
+      });
+      window.addEventListener("scroll", function () { chip.style.display = "none"; }, { passive: true });
+      chip.addEventListener("click", function () {
+        if (!selected) return;
+        var sec = selected.sec;
+        var data = commentFor(sec.dataset.sec);
+        if (data.quotes.indexOf(selected.text) === -1) data.quotes.push(selected.text);
+        renderQuotes(sec);
+        sec.querySelector(".cmt-panel").classList.add("open");
+        sec.querySelector(".cmt-toggle").setAttribute("aria-expanded", "true");
+        chip.style.display = "none";
+        window.getSelection().removeAllRanges();
+        save();
+      });
+
+      function fallbackCopy(text) {
+        var area = document.createElement("textarea");
+        area.value = text;
+        area.style.position = "fixed";
+        area.style.opacity = "0";
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand("copy");
+        area.remove();
+      }
+      document.getElementById("copy").addEventListener("click", function () {
+        var button = this;
+        var lines = ["Week 1 revision guide v1 feedback", "================================", "", "SECTION COMMENTS"];
+        var any = false;
+        document.querySelectorAll(".sec").forEach(function (sec) {
+          var data = commentFor(sec.dataset.sec);
+          if (!data.text.trim() && !data.quotes.length) return;
+          any = true;
+          lines.push("", "[" + sec.dataset.sec + "]");
+          data.quotes.forEach(function (quote) { lines.push("> " + quote); });
+          lines.push(data.text.trim() || "(quote only, no comment)");
+        });
+        if (!any) lines.push("(none)");
+        lines.push("", "ANYTHING ELSE", state.anything.trim() || "(not answered)");
+        var text = lines.join("\n");
+        var done = function () { button.textContent = "Copied"; setTimeout(function () { button.textContent = "Copy feedback"; }, 1400); };
+        if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); });
+        else { fallbackCopy(text); done(); }
+      });
+
+      refresh();
+    })();
+  </script>
+</body>
+</html>

@@ -10,25 +10,25 @@ Tick sessions as you finish them. GitHub saves checkbox state to your account, s
 Started on:
 
 ### Week 1: The mental model
-- [ ] Mon. Making Deep Learning Go Brrrr, first half
-- [ ] Tue. Making Deep Learning Go Brrrr, second half
-- [ ] Wed. CS336 Lecture 5, GPUs, first 30 min
-- [ ] Thu. CS336 Lecture 5, second 30 min
-- [ ] Fri. Hand-derive arithmetic intensity for your model
+- [x] Mon. Making Deep Learning Go Brrrr, first half
+- [x] Tue. Making Deep Learning Go Brrrr, second half
+- [x] Wed. CS336 Lecture 5, GPUs, first 30 min
+- [x] Thu. CS336 Lecture 5, second 30 min
+- [x] Fri. Hand-derive arithmetic intensity for your model
 
 ### Week 2: vLLM
-- [ ] Mon. PagedAttention announcement and paper
-- [ ] Tue. Serve a 7-8B model behind vLLM
-- [ ] Wed. vLLM V1 architecture
-- [ ] Thu. Inside vLLM, scheduler and block manager
-- [ ] Fri. Follow the block table code path
+- [x] Mon. PagedAttention announcement and paper
+- [x] Tue. Serve a 7-8B model behind vLLM
+- [x] Wed. vLLM V1 architecture
+- [x] Thu. Inside vLLM, scheduler and block manager
+- [x] Fri. Follow the block table code path
 
 ### Week 3: Measurement
-- [ ] Mon. vLLM metrics design doc
-- [ ] Tue. Stand up Prometheus and Grafana
-- [ ] Wed. Import the dashboard, confirm live panels
-- [ ] Thu. Map every metric to a panel
-- [ ] Fri. Modal benchmarking methodology
+- [x] Mon. vLLM metrics design doc
+- [x] Tue. Stand up Prometheus and Grafana
+- [x] Wed. Import the dashboard, confirm live panels
+- [x] Thu. Map every metric to a panel
+- [x] Fri. Modal benchmarking methodology
 
 ### Week 4: SGLang and batching
 - [ ] Mon. RadixAttention
