@@ -45,7 +45,7 @@ Started on:
 - [x] Tue. First GuideLLM sweep
 - [x] Wed. vllm bench serve cross-check
 - [x] Thu. Concurrency sweep (GuideLLM concurrent profile instead of genai-perf, run from a Modal client)
-- [x] Fri. Push past 1000 concurrent
+- [x] Fri. Push past 1000 concurrent, and read vLLM tuning strategies
 - [ ] Buffer. Pre-publish benchmark checklist
 
 [Week 5 load-testing summary and results](notes/week5-takeaways.md)

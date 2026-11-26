@@ -1,6 +1,18 @@
 # Week 5 Takeaways: Load Testing to 1,000 Concurrent
 
-2026-11-25. All five weekday sessions are done. vLLM and SGLang both completed a concurrency sweep to 1,000 concurrent requests on Modal H100s with zero request errors, watched live in Grafana. The pre-publish checklist is still open. [Companion benchmarks](https://github.com/crypticseeds/inference-engineering/tree/main/benchmarks)
+2026-11-25. All five weekday sessions and their readings are done. vLLM and SGLang both completed a concurrency sweep to 1,000 concurrent requests on Modal H100s with zero request errors, watched live in Grafana. The pre-publish checklist is still open. [Companion benchmarks](https://github.com/crypticseeds/inference-engineering/tree/main/benchmarks)
+
+## What the Readings Explain
+
+| Reading | What to remember |
+|---|---|
+| [GuideLLM introduction](https://developers.redhat.com/articles/2025/06/20/guidellm-evaluate-llm-deployments-real-world-inference) (Red Hat) | GuideLLM simulates real traffic against an OpenAI-compatible endpoint and reports requests/s, request latency, TTFT, inter-token latency and output tokens/s with percentiles. Its sweep mode runs a synchronous baseline, a maximum-throughput test and rates in between, so you see the whole latency-throughput curve instead of one arbitrary load point. Compare the results with an SLO, such as a TTFT ceiling, to find the highest rate a deployment can serve. Uses: pre-deployment limits, regression tests, hardware comparison and capacity planning. |
+| [GuideLLM repository](https://github.com/vllm-project/guidellm) | Profiles set the load shape: `synchronous` (one at a time), `constant` (fixed arrival rate, optional in-flight cap), `concurrent` (fixed number of streams) and `sweep`. Fix prompt and output lengths, because they set KV cache per request and therefore the result. Watch its warnings: root dispatch delay above 0.2 s means the client sent late and the stage did not run at its nominal load. |
+| [`vllm bench serve`](https://docs.vllm.ai/en/latest/benchmarking/cli/) | vLLM's own serving benchmark, run against a live server. It controls arrival rate, burstiness and a concurrency cap, and reports TTFT, time per output token, inter-token and end-to-end latency percentiles plus throughput. A second tool with its own client and request generator is a cross-check: if two tools agree, the result is not an artifact of one client. |
+| [perf_analyzer and GenAI-Perf](https://github.com/triton-inference-server/perf_analyzer) (NVIDIA) | perf_analyzer measures Triton inference performance, and its concurrency mode keeps a fixed number of requests in flight. The README now marks GenAI-Perf deprecated and points to AIPerf, NVIDIA's replacement. This week used GuideLLM's concurrent profile instead. |
+| [Practical strategies for vLLM performance tuning](https://developers.redhat.com/articles/2026/03/03/practical-strategies-vllm-performance-tuning) (Red Hat) | Tuning is iterative: benchmark, change one knob, benchmark again. **GPUs per replica:** start with the fewest GPUs that load the model with enough KV cache, run as many replicas as fit, then trade replicas for GPUs per replica. **`--gpu-memory-utilization`:** raise it until startup or heavy load fails, then back off; the unused margin can reach 8 GB on an H100. **`--kv-cache-dtype fp8`:** more concurrent requests per GPU, but check output quality. **`--max-num-seqs`:** find where throughput plateaus while latency degrades and start there; higher keeps throughput stable but queued requests wait longer for their first token. |
+
+The tuning article's `--max-num-seqs` advice is exactly what this week's runs measured. The A10 saturated at 16 running requests, and the H100's 256 limit filled from 500 concurrent, which is where its throughput stopped growing.
 
 ## What the Week Was About
 
