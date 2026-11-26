@@ -31,18 +31,24 @@ Started on:
 - [x] Fri. Modal benchmarking methodology
 
 ### Week 4: SGLang and batching
-- [ ] Mon. RadixAttention
-- [ ] Tue. Deploy SGLang with the same model
-- [ ] Wed. SGLang talk and paper
-- [ ] Thu. Continuous batching and Orca
-- [ ] Fri. Sarathi-Serve, chunked prefill
+- [x] Mon. RadixAttention
+- [x] Tue. Deploy SGLang with the same model
+- [x] Wed. SGLang talk and paper
+- [x] Thu. Continuous batching and Orca
+- [x] Fri. Sarathi-Serve, chunked prefill
+- [ ] Buffer. Measure shared-prefix TTFT on SGLang and vLLM (deferred until after the Week 5 concurrent session)
+
+[Week 4 reading summary and build recap](notes/week4-takeaways.md)
 
 ### Week 5: Load testing
-- [ ] Mon. GuideLLM intro and install
-- [ ] Tue. First GuideLLM sweep
-- [ ] Wed. vllm bench serve cross-check
-- [ ] Thu. genai-perf concurrency sweep
-- [ ] Fri. Push past 1000 concurrent
+- [x] Mon. GuideLLM intro and install
+- [x] Tue. First GuideLLM sweep
+- [x] Wed. vllm bench serve cross-check
+- [x] Thu. Concurrency sweep (GuideLLM concurrent profile instead of genai-perf, run from a Modal client)
+- [x] Fri. Push past 1000 concurrent, and read vLLM tuning strategies
+- [ ] Buffer. Pre-publish benchmark checklist
+
+[Week 5 load-testing summary and results](notes/week5-takeaways.md)
 
 ### Week 6: Quantization
 - [ ] Mon. MIT 6.5940 Lecture 5, first half
