@@ -36,7 +36,7 @@ Started on:
 - [x] Wed. SGLang talk and paper
 - [x] Thu. Continuous batching and Orca
 - [x] Fri. Sarathi-Serve, chunked prefill
-- [ ] Buffer. Measure shared-prefix TTFT on SGLang and vLLM (deferred until after the Week 5 concurrent session)
+- [x] Buffer. Measure shared-prefix TTFT on SGLang and vLLM
 
 [Week 4 reading summary and build recap](notes/week4-takeaways.md)
 
@@ -46,7 +46,7 @@ Started on:
 - [x] Wed. vllm bench serve cross-check
 - [x] Thu. Concurrency sweep (GuideLLM concurrent profile instead of genai-perf, run from a Modal client)
 - [x] Fri. Push past 1000 concurrent, and read vLLM tuning strategies
-- [ ] Buffer. Pre-publish benchmark checklist
+- [x] Buffer. Pre-publish benchmark checklist
 
 [Week 5 load-testing summary and results](notes/week5-takeaways.md)
 
@@ -86,14 +86,16 @@ Started on:
 - [ ] Fri. Optional edge sampler
 
 ### Pre-publish checklist
-- [ ] Swept the request rate
-- [ ] Reported exact input and output token lengths
+- [x] Swept the request rate
+- [x] Reported exact input and output token lengths
 - [ ] Reported p50, p95, p99
-- [ ] Kept TTFT and inter-token latency separate
-- [ ] Did not measure at the preemption point
+- [x] Kept TTFT and inter-token latency separate
+- [x] Did not measure at the preemption point
 - [ ] Used realistic, not uniform, length distributions
-- [ ] Accounted for tokenizer differences
-- [ ] Pinned versions and published exact commands
+- [x] Accounted for tokenizer differences
+- [x] Pinned versions and published exact commands
+
+[Audit of the Week 4 and 5 runs](https://github.com/crypticseeds/inference-engineering/blob/main/benchmarks/pre-publish-checklist.md)
 
 ---
 

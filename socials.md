@@ -77,3 +77,41 @@ Week 3 of my LLM inference roadmap: Prometheus + Grafana on Qwen3-8B / vLLM / on
 - Stock dashboard showed p99 queue time 297 ms. Real mean: 7.8 µs. Histogram buckets.
 
 https://github.com/crypticseeds/inference-engineering/tree/main/observability
+
+### Week 5: 1,000 concurrent requests
+
+Attach: `grafana-h100-sweep.png` (full sweep, both engines) and `grafana-h100-500-1000.png` (the saturation stages) from the H100 run directory.
+
+#### LinkedIn
+
+Week 5 of my LLM inference engineering roadmap: load testing to 1,000 concurrent requests.
+
+Same model (Qwen3-8B, BF16, pinned revision), same workload, two engines side by side: vLLM 0.21 and SGLang 0.5.9, each on its own H100 with CUDA graphs and a 256-request batch limit. GuideLLM drove a concurrency sweep from 1 to 1,000 streaming requests from a client in the same region, while Prometheus and Grafana watched both servers live.
+
+Both engines finished every stage with zero errors and zero preemptions. vLLM peaked at 327 requests/s at 500 concurrent; SGLang at 185 requests/s at 100. Against a p95 time-to-first-token target of 500 ms, vLLM held up to 100 concurrent and SGLang to 50.
+
+Three things the numbers taught me:
+
+1. Throughput stops where the batch fills. vLLM's 256 running slots filled at 500 concurrent, and that is exactly where throughput flattened. Past that point, more users only add waiting time. That is the knee you set `--max-num-seqs` from.
+
+2. The queue you can see is not always where the time goes. On a small A10, the scheduler queue explained the latency: about 2 seconds of queueing at saturation. On the H100 at 1,000 concurrent, vLLM's mean queue time was 0.1 s while its time to first token was 2.5 s, and SGLang barely queued at all. Most requests were waiting before either engine's scheduler. Finding out where is next.
+
+3. Check the load generator before trusting the result. On the A10, my client could not keep up at 32 requests/s and sent requests up to 24 s late. That stage measured saturation, not 32 requests/s. Moving the client next to the GPUs also changed one engine's low-load latency by 190 ms and the other's by under 10 ms.
+
+Memory never mattered here: with 88-token requests the KV cache stayed under 6%. Long prompts are a different test.
+
+Total GPU cost for the A10 and H100 sessions: about 4 USD.
+
+Benchmarks and dashboards: https://github.com/crypticseeds/inference-engineering/tree/main/benchmarks
+
+#LLM #vLLM #SGLang #LoadTesting #InferenceEngineering
+
+#### X
+
+Week 5 of my LLM inference roadmap: vLLM vs SGLang to 1,000 concurrent on H100s (Qwen3-8B, GuideLLM, live Grafana).
+
+- vLLM peak 327 req/s at 500 concurrent, SGLang 185 at 100. Zero errors.
+- Throughput flattened exactly when vLLM's 256-slot batch filled.
+- At 1,000 concurrent, queue time 0.1 s, TTFT 2.5 s. The wait was before the scheduler.
+
+https://github.com/crypticseeds/inference-engineering/tree/main/benchmarks

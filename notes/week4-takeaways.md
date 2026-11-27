@@ -1,27 +1,62 @@
 # Week 4 Takeaways: SGLang and Batching
 
-2026-11-22. The readings and SGLang deployment are complete. The shared-prefix comparison with vLLM is still open. [Companion deployment and Bruno runbook](https://github.com/crypticseeds/inference-engineering/tree/main/variants/sglang)
+Quick recap of the week 4 readings. Full notes:
 
-## What the Readings Explain
+- [RadixAttention and SGLang](week4-radixattention-sglang.md) (Mon)
+- [SGLang paper and talk](week4-sglang-paper.md) (Wed)
+- [Continuous batching](week4-continuous-batching.md) (Thu)
+- [Orca](week4-orca.md) (Thu)
+- [Sarathi-Serve and chunked prefill](week4-sarathi-serve.md) (Fri)
+- [SGLang v0.4 zero-overhead scheduler](week4-sglang-v0-4-scheduler.md) (Buffer)
 
-| Reading | What to remember |
-|---|---|
-| [RadixAttention announcement](https://lmsys.org/blog/2024-01-17-sglang/) and [SGLang paper](https://arxiv.org/abs/2312.07104) | SGLang stores reusable KV cache entries in a radix tree keyed by token sequences. A request finds the longest cached token prefix and only computes KV entries for the remaining prompt tokens. Shared system prompts are a good test case because they are repeated at the start of many requests. |
-| [Efficient LLM Inference with SGLang](https://www.youtube.com/watch?v=Ny4xxErgFgQ) | The SGLang programming frontend and serving runtime are separate pieces. This week's deployment used the runtime through its OpenAI-compatible HTTP API. |
-| [Continuous batching](https://www.anyscale.com/blog/continuous-batching-llm-inference) and [Orca](https://www.usenix.org/conference/osdi22/presentation/yu) | Iteration-level scheduling lets finished requests leave and waiting requests join between model iterations. With mixed output lengths, short requests can free slots while longer ones keep generating. |
-| [Sarathi-Serve](https://arxiv.org/abs/2403.02310) | Chunked prefill splits a long prompt into smaller units of work. The scheduler can batch a prefill chunk with ongoing decode so a long incoming prompt is less likely to stall other users' token streams. Chunk size affects both prompt processing latency and decode interruptions. |
-| [SGLang v0.4 scheduler](https://lmsys.org/blog/2024-12-04-sglang-v0-4/) | CPU scheduling work can overlap with GPU execution to reduce gaps between GPU steps. This addresses a separate source of overhead from prefix reuse and batching. |
+What I built: [Week 4 build log](week4-build-log.md).
 
-PagedAttention and RadixAttention describe different parts of serving. PagedAttention manages the physical storage of KV cache blocks. RadixAttention indexes cached token prefixes for reuse across requests. vLLM can also reuse prefixes, so a fair comparison records whether caching is enabled on both engines and how the cache was primed. [Week 2 block-table notes](week2-vllm-architecture-and-block-table.md) · [vLLM prefix caching design](https://docs.vllm.ai/en/latest/design/prefix_caching/)
+## The One-Line Version
 
-## What I Built and Verified
+**A serving engine wins by not wasting work: don't recompute shared prefixes, don't leave batch slots idle, don't let one long prompt freeze every stream, and don't let the CPU keep the GPU waiting.**
 
-I ran SGLang 0.5.9 on one Modal A10 with the same pinned Qwen3-8B BF16 weights and 8,192-token context limit as the vLLM baseline. `modal serve` kept the HTTPS endpoint available while I tested from Bruno. Modal authenticated the requests and forwarded them to SGLang on the GPU. `GET /v1/models` returned `qwen3-8b` with `owned_by: sglang`. A non-streaming `POST /v1/chat/completions` returned an assistant reply with 22 prompt tokens, 50 completion tokens, and `finish_reason: stop`.
+## Four Kinds of Waste and Their Fixes
 
-I saw intermittent failures during testing and did not capture a failed response together with the server logs. The server can scale to zero after two minutes idle, so cold starts are a possible explanation. The final logs show shutdown and an exit code of 0.
+| Waste | Fix | Where | Wins most when |
+|---|---|---|---|
+| Recomputing a shared prefix | Prefix cache: RadixAttention (radix tree, LRU on leaves) | SGLang; vLLM `--enable-prefix-caching` | Shared system prompts, few-shot, multi-turn, agents |
+| Finished sequences holding batch slots | Continuous batching (iteration-level scheduling) | Orca, then every modern engine | Output lengths vary a lot |
+| A long prefill stalling every decode stream | Chunked prefill + stall-free scheduling under a token budget | Sarathi-Serve; vLLM `--max-num-batched-tokens` | Long prompts mixed with streaming users |
+| GPU idle while the CPU schedules | Overlap scheduling one batch ahead | SGLang v0.4 (`--disable-overlap` to turn off) | Small models, short steps, large tensor parallelism |
 
-## Open Comparison and Week 5
+PagedAttention (week 2) sits under all of these: it decides where KV blocks live. RadixAttention decides which of them can be reused.
 
-The Bruno request verified that the API works. The shared-prefix TTFT comparison is deferred until after the Week 5 concurrent session. Revisit using GuideLLM for it then. Keep the two containers warm and use the same client, model revision, prompt and output settings on both. With prefix caching enabled, measure streaming TTFT for a long prefix the engine has never seen, then prime that prefix and measure requests that reuse it with different suffixes. Record repeat counts, TTFT percentiles, and cache hits where available. Keep GPU cold starts out of those measurements.
+## Ten Things to Remember
 
-Week 5 starts with the GuideLLM introduction and install on 2026-11-23. The first sweep is the fixed-length vLLM baseline, followed by a `vllm bench serve` cross-check. [Progress and Week 5 checklist](../progress.md#week-5-load-testing)
+1. **Prefix reuse mostly helps TTFT,** because prefill is the work it skips. Production hit rates in the paper: 52 to 74%, with first-token latency 1.7x lower.
+2. **RadixAttention costs almost nothing without hits** (tree overhead under 0.3%), which is why SGLang never turns it off.
+3. **Cache-aware scheduling (longest prefix first) trades fairness for hit rate.** Requests with no shared prefix can starve.
+4. **Across replicas, prefix caching needs cache-aware routing.** v0.4's router took the hit rate from 20% to 75%; round-robin spreads each prefix everywhere.
+5. **Continuous batching = schedule per iteration.** Finished sequences leave and new ones join between steps.
+6. **The batching gain depends on output length variance.** With uniform lengths, static and continuous batching converge. The 23x and 36.9x headlines both used varied lengths.
+7. **Selective batching works because attention has no weights.** Batch the linear layers token-wise, run attention per request.
+8. **Prefill is compute-bound, decode is memory-bound,** so a decode batch has spare compute for a bounded slice of prefill.
+9. **Generation stalls** are what a prefill-first scheduler does to P99 time-between-tokens. The token budget is the knob: smaller for smooth streams, larger for throughput and TTFT. Keep it a tile multiple (257 tokens was 32% slower than 256).
+10. **A fair engine comparison pins everything,** including the settings with different names in each engine: prefix caching, CUDA graphs, memory fraction, batch cap, sampling defaults.
+
+## Numbers Worth Knowing
+
+| Claim | Number | Conditions |
+|---|---|---|
+| SGLang throughput | up to 5x (blog), 6.4x (paper) | Prefix-heavy LM programs, A10G, vs vLLM 0.2.5 and Guidance |
+| Continuous batching | 23x (vLLM vs naive static) | OPT-13B, 1x A100 40 GB, outputs up to 1,536 tokens, exponential lengths |
+| Orca | 36.9x at equal latency | GPT-3 175B on 16 A100s vs FasterTransformer |
+| Sarathi-Serve | 2.6x to 5.6x serving capacity | Under P99 TBT SLOs, Mistral-7B to Falcon-180B |
+| SGLang v0.4 overlap scheduler | 1.1x vs previous, 1.3x vs baselines | Llama-3.2-3B, 4k in / 2k out |
+
+Every headline number above comes from a workload chosen to show the technique. Read the conditions before quoting the multiplier.
+
+## Week 4 Status
+
+- [x] SGLang deployed on the same A10, model revision and limits as vLLM ([build log](week4-build-log.md)).
+- [x] Shared-prefix TTFT comparison against vLLM, run 2026-11-27 ([results in the build log](week4-build-log.md#shared-prefix-comparison-buffer-run-2026-11-27)). A hit cut one-request TTFT from 533 to 73 ms on vLLM and from 607 to 170 ms on SGLang.
+
+## Sources Note
+
+- The SGLang talk is a video. These notes follow the paper, which covers the same system.
+- The Orca link in the roadmap is the USENIX presentation page; the paper PDF is `usenix.org/system/files/osdi22-yu.pdf`.
