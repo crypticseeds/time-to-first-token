@@ -88,6 +88,6 @@ KV cache peaked at 5.8% (vLLM) and 4.9% (SGLang). Full tables: [A10 live run](ht
 
 ## Next
 
-- Week 5 buffer: the pre-publish benchmark checklist.
-- Week 4 buffer: the shared-prefix TTFT comparison, now that the harness exists.
+- Week 5 buffer: the pre-publish benchmark checklist. Done 2026-11-27; see the [audit](https://github.com/crypticseeds/inference-engineering/blob/main/benchmarks/pre-publish-checklist.md).
+- Week 4 buffer: the shared-prefix TTFT comparison. Done 2026-11-27; see the [Week 4 build log](week4-build-log.md#shared-prefix-comparison-buffer-run-2026-11-27).
 - Week 6: quantization.

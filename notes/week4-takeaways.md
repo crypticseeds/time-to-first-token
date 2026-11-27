@@ -54,7 +54,7 @@ Every headline number above comes from a workload chosen to show the technique. 
 ## Week 4 Status
 
 - [x] SGLang deployed on the same A10, model revision and limits as vLLM ([build log](week4-build-log.md)).
-- [ ] Shared-prefix TTFT comparison against vLLM: deferred until after the Week 5 concurrency session. The plan is in the build log.
+- [x] Shared-prefix TTFT comparison against vLLM, run 2026-11-27 ([results in the build log](week4-build-log.md#shared-prefix-comparison-buffer-run-2026-11-27)). A hit cut one-request TTFT from 533 to 73 ms on vLLM and from 607 to 170 ms on SGLang.
 
 ## Sources Note
 

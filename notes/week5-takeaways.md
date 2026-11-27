@@ -65,7 +65,7 @@ From the roadmap: a scripted concurrency sweep past 1,000 concurrent, with p50, 
 - [x] Two-tool cross-check on the A10 rate sweep (GuideLLM and `vllm bench serve`)
 - [ ] Two-tool cross-check on the H100 concurrency sweep (AIPerf would be the second tool)
 - [x] Watched KV cache and queue for preemption: none at any stage
-- [ ] Pre-publish benchmark checklist (Week 5 buffer)
+- [x] Pre-publish benchmark checklist (Week 5 buffer): [checklist and audit](https://github.com/crypticseeds/inference-engineering/blob/main/benchmarks/pre-publish-checklist.md). Gaps: fixed lengths on every run, and p99 missing from the A10 live and H100 write-ups (it is in the raw reports)
 
 ## Sources Note
 

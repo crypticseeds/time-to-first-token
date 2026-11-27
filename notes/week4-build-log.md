@@ -37,17 +37,27 @@ The limits were chosen to match vLLM: same context, same 16-request batch cap, C
 | `GET /metrics` returned 404 | Found in week 5: SGLang needs `--enable-metrics`. Added to the launcher on 2026-11-24 |
 | Modal proxy auth blocked Prometheus | Week 5 moved both apps to unauthenticated `modal serve` endpoints for scraping, with the hostname kept out of every committed file |
 
-## What I Did Not Do
+## Shared-Prefix Comparison (Buffer, Run 2026-11-27)
 
-The week's deliverable included a first prefix-reuse comparison against vLLM. I deferred it: a fair test needs both containers warm, the same client, and a long shared prefix primed and then reused. The week 5 harness (GuideLLM from a Modal client, both engines live in one dashboard) is the right tool for it, so it waits until after the 1,000-concurrent session.
+Deferred from the week itself until the week 5 harness existed. Full write-up: [A10 shared-prefix run](https://github.com/crypticseeds/inference-engineering/tree/main/benchmarks/2026-11-27-modal-a10-prefix).
 
-Planned shape of that test:
+- Both engines on their own A10 with prefix caching on, a Modal client in us-east, raw 2,048-token prefix + 64-token suffix prompts, 32 output tokens.
+- A probe first confirmed reuse: on a repeated prefix, both engines reported about 2,340 of about 2,360 prompt tokens as cached.
+- `vllm bench serve` (`prefix_repetition`) as the main client, `sglang.bench_serving` (`generated-shared-prefix`) as the cross-check. 12 stages, 0 failed requests.
 
-1. Both engines warm, prefix caching on in both (`--enable-prefix-caching` on vLLM; RadixAttention is SGLang's default).
-2. Streaming TTFT for a long prefix neither engine has seen.
-3. Prime it, then send requests that share it with different suffixes.
-4. Record repeat counts, TTFT percentiles and cached prompt tokens (`prompt_tokens_details.cached_tokens` in the response usage).
-5. Keep cold starts out of the measurement.
+| TTFT p50 | vLLM | SGLang |
+|---|---:|---:|
+| Distinct prefixes, one at a time | 533 ms | 607 ms |
+| Reused prefix (cache hit), one at a time | 73 ms | 170 ms |
+| Distinct prefixes at 2 req/s | 4,863 ms (overloaded, 1.69 req/s completed) | 7,334 ms (overloaded, 1.61 req/s) |
+| Reused prefixes at 2 req/s | 151 ms | 214 ms |
+
+What it showed:
+
+1. A cache hit removed 72 to 86% of one-request TTFT on 2,112-token prompts.
+2. Reuse raised capacity too: 2 req/s overloaded both A10s with distinct prefixes and was easy with reused ones.
+3. SGLang's hit TTFT has a floor about 100 ms higher than vLLM's on this setup. Not investigated.
+4. This is two prefix caches against each other. The RadixAttention paper's gains are against engines without automatic prefix caching; vLLM 0.21 has it.
 
 ## What Surprised Me
 
