@@ -115,3 +115,37 @@ Week 5 of my LLM inference roadmap: vLLM vs SGLang to 1,000 concurrent on H100s 
 - At 1,000 concurrent, queue time 0.1 s, TTFT 2.5 s. The wait was before the scheduler.
 
 https://github.com/crypticseeds/inference-engineering/tree/main/benchmarks
+
+### Week 6: quantization tradeoff
+
+Attach: `grafana-l40s-quant-sweep.png` from the L40S quantization run directory.
+
+#### LinkedIn
+
+Week 6 of my LLM inference engineering roadmap: what quantization actually costs.
+
+Same model, three checkpoints: Qwen3-8B in BF16, FP8 and AWQ INT4, each served by vLLM on its own L40S. Same engine settings, same load test, and a quality check on the full GSM8K test set (1,319 maths questions) plus WikiText perplexity.
+
+Three things the numbers taught me:
+
+1. FP8 was free. GSM8K 88.0% vs 87.6% for BF16, a difference that is statistical noise (paired test, p = 0.58). It also served the most requests at 250 concurrent, because the L40S does the matrix multiplies on FP8 tensor cores.
+
+2. INT4 wins exactly where decode is memory-bound. One request at a time, AWQ generated a token every 8.2 ms against 21.7 ms for BF16, close to what memory bandwidth predicts for 5.7 GB of weights. At 250 concurrent the work becomes compute-bound, AWQ dequantizes back to 16-bit, and its advantage disappears.
+
+3. INT4's quality cost is real. GSM8K dropped 2 points (85.6%), and the paired test says it is not noise (p = 0.017). Perplexity rose 5%. For this model, INT4 is a memory lever, not a default.
+
+The most useful lesson was not about quantization. My first run showed BF16 with a 258 ms time to first token against 40 ms for the others. Inter-token latency was normal, which pointed at the network: the GPU had been scheduled outside the region. Pinning the region fixed it.
+
+Results, raw data and the issues I hit: https://github.com/crypticseeds/inference-engineering/tree/main/benchmarks/2026-11-28-modal-l40s-quantization
+
+#LLM #vLLM #Quantization #InferenceEngineering #MLOps
+
+#### X
+
+Week 6 of my LLM inference roadmap: Qwen3-8B in BF16 vs FP8 vs AWQ INT4 on L40S GPUs.
+
+- FP8: same GSM8K as BF16 (p = 0.58), most throughput at 250 concurrent.
+- AWQ: 2.6x faster tokens at one request, no faster at 250. GSM8K −2 points (p = 0.017).
+- INT4 is a memory lever, not a default.
+
+https://github.com/crypticseeds/inference-engineering/tree/main/benchmarks/2026-11-28-modal-l40s-quantization
