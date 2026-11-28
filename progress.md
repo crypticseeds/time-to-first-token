@@ -51,11 +51,13 @@ Started on:
 [Week 5 load-testing summary and results](notes/week5-takeaways.md)
 
 ### Week 6: Quantization
-- [ ] Mon. MIT 6.5940 Lecture 5, first half
-- [ ] Tue. Lecture 5 and 6, AWQ, GPTQ, SmoothQuant
-- [ ] Wed. Quantization survey, map methods to engines
-- [ ] Thu. Serve AWQ or GPTQ and FP8 variants
-- [ ] Fri. Quality proxy across FP16, FP8, INT4
+- [x] Mon. MIT 6.5940 Lecture 5, first half
+- [x] Tue. Lecture 5 and 6, AWQ, GPTQ, SmoothQuant
+- [x] Wed. Quantization survey, map methods to engines
+- [x] Thu. Serve AWQ or GPTQ and FP8 variants (AWQ and FP8 on an L40S)
+- [x] Fri. Quality proxy across FP16, FP8, INT4 (BF16 baseline; GSM8K and WikiText)
+
+[Week 6 quantization summary and results](notes/week6-takeaways.md)
 
 ### Week 7: Speculative decoding and KV eviction
 - [ ] Mon. Speculative decoding docs and benchmark post
